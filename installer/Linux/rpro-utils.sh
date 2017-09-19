@@ -17,6 +17,7 @@ OS_RHL="REDHAT"
  
 SERVICE_LOCATION=/etc/init.d
 SERVICE_NAME=red5pro 
+RED5SH=red5.sh
 SERVICE_INSTALLER=/usr/sbin/update-rc.d
 IS_64_BIT=0
 OS_NAME=
@@ -36,7 +37,9 @@ RED5PRO_DEFAULT_DOWNLOAD_FOLDER_NAME="tmp"
 RED5PRO_DEFAULT_DOWNLOAD_FOLDER=
 
 RED5PRO_DOWNLOAD_URL=
+RED5PRO_MEMORY_PCT=80
 
+RED5PRO_DEFAULT_MEMORY_PATTERN="-Xmx2g"
 
 ######################################################################################
 
@@ -443,6 +446,44 @@ add_update_java()
 
 ############################ RED5PRO OPERATIONS ######################################
 
+modify_jvm_memory()
+{
+	
+	if [[ $1 -eq 1 ]]; then
+		echo "Enter the full path to Red5pro installation"
+		read rpro_path
+	else
+		rpro_path=$DEFAULT_RPRO_PATH
+	fi
+
+
+	check_current_rpro 1
+	if [[ $rpro_exists -eq 1 ]]; then
+
+		red5_sh_file=$rpro_path/$RED5SH
+
+		if [ ! -f $red5_sh_file ]; then
+	  		lecho "CRITICAL ERROR! $red5_sh_file was not found!"
+			pause;
+		else
+			# red5_sh_content=`cat $red5_sh_file`
+			lecho "Calculating maximum allocatable memory"
+			sleep 1
+
+			phymem=$(free -m|awk '/^Mem:/{print $2}') # Value in Mb
+			alloc_phymem=$(awk "BEGIN { pc=${phymem}*${RED5PRO_MEMORY_PCT}/100; print int(pc);}") # calculate percentage to allocate
+			alloc_phymem=$(bc <<< "scale=1;$alloc_phymem/1024") # Mb to Gb
+			alloc_phymem=$(printf "%.0f" $alloc_phymem) # Round off
+
+			alloc_phymem_string="-Xmx"$alloc_phymem"g"
+
+			sed -i -e "s/-Xmx2g/$alloc_phymem_string/g" $red5_sh_file # improve this
+			
+		fi
+	fi
+	
+	pause;
+}
 
 
 # Private
@@ -1976,6 +2017,7 @@ simple_menu_read_options(){
 		5) start_red5pro_service ;;
 		6) stop_red5pro_service ;;
 		7) main ;;
+		8) modify_jvm_memory ;;
 		0) exit 0;;
 		*) echo -e "${RED}Error...${STD}" && sleep 2
 	esac
