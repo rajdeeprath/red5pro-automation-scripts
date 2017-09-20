@@ -475,14 +475,21 @@ modify_jvm_memory()
 			alloc_phymem=$(bc <<< "scale=1;$alloc_phymem/1024") # Mb to Gb
 			alloc_phymem=$(printf "%.0f" $alloc_phymem) # Round off
 
+			if [[ "$alloc_phymem" -lt 2 ]]; then
+				alloc_phymem = 2
+			fi
+
 			alloc_phymem_string="-Xmx"$alloc_phymem"g"
 
 			sed -i -e "s/-Xmx2g/$alloc_phymem_string/g" $red5_sh_file # improve this
-			
+			lecho "Memory size updated!"
+			sleep 1
+
+			if [ ! $# -eq 0 ];  then
+				pause
+			fi
 		fi
 	fi
-	
-	pause;
 }
 
 
@@ -983,6 +990,9 @@ install_rpro_zip()
 
 	# Install additional libraries
 	postrequisites
+
+	# JVM meory update
+	modify_jvm_memory
 
 
 	# Installing red5 service
