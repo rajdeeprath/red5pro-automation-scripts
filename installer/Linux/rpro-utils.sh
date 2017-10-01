@@ -470,19 +470,34 @@ modify_jvm_memory()
 			lecho "Calculating maximum allocatable memory"
 			sleep 1
 
+			low_mem_response=
 			phymem=$(free -m|awk '/^Mem:/{print $2}') # Value in Mb
+			# echo "Total Memory in MB = $phymem"
 			alloc_phymem=$(awk "BEGIN { pc=${phymem}*${RED5PRO_MEMORY_PCT}/100; print int(pc);}") # calculate percentage to allocate
 			alloc_phymem=$(bc <<< "scale=1;$alloc_phymem/1024") # Mb to Gb
-			alloc_phymem=$(printf "%.0f" $alloc_phymem) # Round off
+			alloc_phymem_rounded=$(printf "%.0f" $alloc_phymem) # Round off
 
-			if [[ "$alloc_phymem" -lt 2 ]]; then
-				alloc_phymem = 2
+			if [[ "$alloc_phymem_rounded" -lt 2 ]]; then
+				lecho "SEVERE!: System memory is insufficient for running this software.Installation cannot continue !!"
+				read -r -p "Press any key to exit  " low_mem_response
+				exit
+			else 
+				if [[ "$alloc_phymem_rounded" -eq 2 ]]; then	
+					read -r -p "WARNING!: System memory is is barely enough for running this software.Do you wish to continue ? [y/N] " low_mem_response
+					case $low_mem_response in
+					[yY][eE][sS]|[yY]) 
+					;;
+					*)
+					sleep 1
+					exit
+					;;
+					esac
+				fi
 			fi
 
-			alloc_phymem_string="-Xmx"$alloc_phymem"g"
-
+			alloc_phymem_string="-Xmx"$alloc_phymem_rounded"g"
 			sed -i -e "s/-Xmx2g/$alloc_phymem_string/g" $red5_sh_file # improve this
-			lecho "Memory size updated!"
+			lecho "JVM memory size updated to use $alloc_phymem_rounded Gb!"
 			sleep 1
 
 			if [ ! $# -eq 0 ];  then
@@ -513,6 +528,14 @@ download_latest()
 	cd $dir
 
 	# echo $dir
+	red5pro_com_login_form	
+}
+
+
+
+red5pro_com_login_form()
+{
+
 	rpro_form_valid=1
 	echo "Please enter your red5pro.com login details"
 	
@@ -576,11 +599,30 @@ download_latest()
 			fi
 		else
 			lecho "Failed to authenticate with website!"
+			read -r -p " -- Retry? [y/N] " try_login_response
+			case $try_login_response in
+			[yY][eE][sS]|[yY]) 
+			download_latest
+			;;
+			*)
+			latest_rpro_download_success=0
+			;;
+			esac
 		fi
 		
 	else
-		lecho "Invalid HTTP request parameters"
+		lecho "Invalid request parameters"
+		read -r -p " -- Retry? [y/N] " try_login_response
+		case $try_login_response in
+		[yY][eE][sS]|[yY]) 
+		download_latest
+		;;
+		*)
+		latest_rpro_download_success=0
+		;;
+		esac
 	fi
+
 }
 
 
@@ -1289,12 +1331,29 @@ stop_red5pro_service()
 	fi
 
 	echo "[ NOTE: It may take a few seconds for service shutdown to complete ]"
-	sleep 5
+	sleep 10
 
 	if [ $# -eq 0 ]
 	  then
 	    pause
 	fi
+}
+
+
+
+
+stop_red5pro_service_now()
+{
+	cd ~
+
+	check_current_rpro 0 1 # passing 2 params for silent check
+
+	lecho "Killing Red5 Pro if it was running!"
+	cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh force > /dev/null 2>&1 &
+	rm -rf $PIDFILE	
+
+	sleep 3
+	show_simple_menu
 }
 
 
@@ -1361,11 +1420,20 @@ remove_rpro_installation()
 
 check_current_rpro()
 {
-	write_log "Checking for existing Red5Pro installation at install location"
-
 	rpro_exists=0
-	echo "Looking for Red5Pro at default location..."
-	sleep 2
+	check_silent=0
+
+	# IF second param is set then turn on silent mode quick check
+	if [ $# -eq 2 ]; then
+		check_silent=1		
+	fi
+
+
+	if [ ! "$check_silent" -eq 1 ] ; then
+		lecho "Looking for Red5Pro at default location..."
+		sleep 2
+	fi
+
 
 	if [ ! -d $DEFAULT_RPRO_PATH ]; then
   		lecho "No Red5pro installation found at default location : $DEFAULT_RPRO_PATH"
@@ -1377,7 +1445,10 @@ check_current_rpro()
 		rpro_exists=1
 		else
 		rpro_exists=1
+
+		if [ ! "$check_silent" -eq 1 ] ; then
 		lecho "Red5pro installation found at default location : $DEFAULT_RPRO_PATH"
+		fi
 
 		pattern='server.version*'
 		replace=""
@@ -1392,6 +1463,8 @@ check_current_rpro()
 
 		fi
 	fi
+
+
 
 	if [ $# -eq 0 ]; then
 		pause		
@@ -1998,8 +2071,9 @@ simple_menu()
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "5. --- START RED5PRO"
 	echo "6. --- STOP RED5PRO"
+	echo "7. --- STOP RED5PRO [FORCE TERMINATION] "
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "7. BACK TO MODE SELECTION"
+	echo "8. BACK TO MODE SELECTION"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "0. Exit"
 	echo "                             "
@@ -2026,8 +2100,8 @@ simple_menu_read_options(){
 		4) show_licence_menu ;;
 		5) start_red5pro_service ;;
 		6) stop_red5pro_service ;;
-		7) main ;;
-		8) modify_jvm_memory ;;
+		7) stop_red5pro_service_now ;;
+		8) main ;;
 		0) exit 0;;
 		*) echo -e "${RED}Error...${STD}" && sleep 2
 	esac
