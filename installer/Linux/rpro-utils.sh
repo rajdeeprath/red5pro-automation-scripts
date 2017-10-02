@@ -741,18 +741,7 @@ auto_install_rpro()
 	# Install prerequisites
 	prerequisites
 
-	# Checking java
-	lecho "Checking java requirements"
-	sleep 2
-	check_java
-
 	
-	if [ "$has_min_java_version" -eq 0 ]; then
-		echo "Installing latest java runtime environment..."
-		sleep 2
-
-		install_java
-	fi 
 
 
 	# Download red5 zip from red5pro.com
@@ -801,19 +790,6 @@ auto_install_rpro_url()
 
 	# Install prerequisites
 	prerequisites	
-
-	# Checking java
-	lecho "Checking java requirements"
-	sleep 2
-	check_java
-
-	
-	if [ "$has_min_java_version" -eq 0 ]; then
-		echo "Installing latest java runtime environment..."
-		sleep 2
-
-		install_java
-	fi 
 
 
 	# Download red5 zip from url
@@ -921,7 +897,7 @@ install_rpro_zip()
 	red5_zip_install_success=0
 
 	# Install prerequisites
-	prerequisites
+	# prerequisites [ extra not needed ]
 			
 	clear
 	lecho "Installing red5pro from zip"
@@ -2375,10 +2351,31 @@ prerequisites()
 
 	prerequisites_update
 
+	prerequisites_java
 	prerequisites_unzip
 	prerequisites_wget
 	prerequisites_bc
 }
+
+
+
+prerequisites_java()
+{
+
+	# Checking java
+	lecho "Checking java requirements"
+	sleep 2
+	check_java
+
+	
+	if [ "$has_min_java_version" -eq 0 ]; then
+		echo "Installing latest java runtime environment..."
+		sleep 2
+
+		install_java
+	fi 
+}
+
 
 
 prerequisites_update()
