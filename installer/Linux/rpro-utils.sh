@@ -17,6 +17,7 @@ OS_RHL="REDHAT"
  
 SERVICE_LOCATION=/etc/init.d
 SERVICE_NAME=red5pro 
+RED5SH=red5.sh
 SERVICE_INSTALLER=/usr/sbin/update-rc.d
 IS_64_BIT=0
 OS_NAME=
@@ -28,6 +29,8 @@ PIDFILE=/var/run/red5.pid
 
 JAVA_JRE_DOWNLOAD_URL="http://download.oracle.com/otn-pub/java/jdk/8u102-b14/"
 
+
+
 JAVA_32_FILENAME="jre-8u102-linux-i586.rpm"
 JAVA_64_FILENAME="jre-8u102-linux-x64.rpm"
 
@@ -36,7 +39,9 @@ RED5PRO_DEFAULT_DOWNLOAD_FOLDER_NAME="tmp"
 RED5PRO_DEFAULT_DOWNLOAD_FOLDER=
 
 RED5PRO_DOWNLOAD_URL=
+RED5PRO_MEMORY_PCT=80
 
+RED5PRO_DEFAULT_MEMORY_PATTERN="-Xmx2g"
 
 ######################################################################################
 
@@ -204,7 +209,7 @@ check_unzip()
 
 	if isinstalled unzip; then
 	unzip_check_success=1
-	lecho "unzip utility was found"		
+	write_log "unzip utility was found"		
 	else
 	unzip_check_success=0
 	lecho "unzip utility not found."				
@@ -222,13 +227,27 @@ check_wget()
 
 	if isinstalled wget; then
 	wget_check_success=1
-	lecho "wget utility was found"
+	write_log "wget utility was found"
 	else
 	wget_check_success=0
 	lecho "wget utility not found."
 	fi
 }
 
+
+check_bc()
+{
+	write_log "Checking for bc utility"	
+	bc_check_success=0
+
+	if isinstalled bc; then
+	bc_check_success=1
+	write_log "bc utility was found"
+	else
+	bc_check_success=0
+	lecho "bc utility not found."
+	fi
+}
 
 
 # Public
@@ -266,7 +285,9 @@ install_java()
 install_java_deb()
 {
 	lecho "Installing Java for Debian";
+	apt-get install -y default-jre
 
+	: '
 	if repo_has_required_java_deb; then
 		write_log "Installing java from repo -> default-jre"
 		apt-get update
@@ -278,6 +299,7 @@ install_java_deb()
 
 		apt-get install oracle-java8-installer
 	fi
+	'
 }
 
 
@@ -285,11 +307,14 @@ install_java_deb()
 # Private
 install_java_rhl()
 {
-	lecho "Installing Java 8 for CentOs";
-	
+	lecho "Installing Java for CentOs";
+	yum -y install java	
+
+	: '
 
 	if repo_has_required_java_rhl; then
 		write_log "Installing java from repo -> default-jre"
+		yum install java-1.8.0-openjdk
 	else
 
 		if [ $IS_64_BIT -eq 1 ]; then
@@ -301,10 +326,7 @@ install_java_rhl()
 		fi
 
 		write_log "Installing java from rpm -> oracle-java8-installer -> $java_url"
-		
-
 		cd ~
-
 
 
 		# Remove installer if exists
@@ -338,6 +360,7 @@ install_java_rhl()
 			rm ~/$java_installer
 		fi
 	fi
+	'
 }
 
 
@@ -363,7 +386,7 @@ install_unzip_deb()
 	write_log "Installing unzip on debian"
 
 	apt-get update
-	apt-get install unzip
+	apt-get install -y unzip
 
 	install_unzip="$(which unzip)";
 	lecho "Unzip installed at $install_unzip"
@@ -377,7 +400,7 @@ install_unzip_rhl()
 	write_log "Installing unzip on rhle"
 
 	# yup update
-	yum install unzip
+	yum -y install unzip
 
 	install_unzip="$(which unzip)";
 	lecho "Unzip installed at $install_unzip"
@@ -400,13 +423,25 @@ install_wget()
 
 
 
+install_bc()
+{
+	write_log "Installing bc"
+
+	if isDebian; then
+	install_bc_deb	
+	else
+	install_bc_rhl
+	fi		
+}
+
+
 # Private
 install_wget_deb()
 {
 	write_log "Installing wget on debian"
 
 	apt-get update
-	apt-get install wget
+	apt-get install -y wget
 
 	install_wget="$(which wget)";
 	lecho "wget installed at $install_wget"
@@ -420,12 +455,39 @@ install_wget_rhl()
 	write_log "Installing wget on rhle"
 
 	# yup update
-	yum install wget
+	yum -y install wget
 
 	install_wget="$(which wget)";
 	lecho "wget installed at $install_wget"
 }
 
+
+
+
+# Private
+install_bc_deb()
+{
+	write_log "Installing bc on debian"
+
+	apt-get install -y bc
+
+	install_bc="$(which bc)";
+	lecho "bc installed at $install_bc"
+}
+
+
+
+# Private
+install_bc_rhl()
+{
+	write_log "Installing bc on rhle"
+
+	# yup update
+	yum -y install bc
+
+	install_bc="$(which bc)";
+	lecho "bc installed at $install_bc"
+}
 
 
 
@@ -443,6 +505,66 @@ add_update_java()
 
 ############################ RED5PRO OPERATIONS ######################################
 
+modify_jvm_memory()
+{
+	
+	if [[ $1 -eq 1 ]]; then
+		echo "Enter the full path to Red5pro installation"
+		read rpro_path
+	else
+		rpro_path=$DEFAULT_RPRO_PATH
+	fi
+
+
+	check_current_rpro 1
+	if [[ $rpro_exists -eq 1 ]]; then
+
+		red5_sh_file=$rpro_path/$RED5SH
+
+		if [ ! -f $red5_sh_file ]; then
+	  		lecho "CRITICAL ERROR! $red5_sh_file was not found!"
+			pause;
+		else
+			# red5_sh_content=`cat $red5_sh_file`
+			lecho "Calculating maximum allocatable memory"
+			sleep 1
+
+			low_mem_response=
+			phymem=$(free -m|awk '/^Mem:/{print $2}') # Value in Mb
+			# echo "Total Memory in MB = $phymem"
+			alloc_phymem=$(awk "BEGIN { pc=${phymem}*${RED5PRO_MEMORY_PCT}/100; print int(pc);}") # calculate percentage to allocate
+			alloc_phymem=$(bc <<< "scale=1;$alloc_phymem/1024") # Mb to Gb
+			alloc_phymem_rounded=$(printf "%.0f" $alloc_phymem) # Round off
+
+			if [[ "$alloc_phymem_rounded" -lt 2 ]]; then
+				lecho "SEVERE!: System memory is insufficient for running this software.Installation cannot continue !!"
+				read -r -p "Press any key to exit  " low_mem_response
+				exit
+			else 
+				if [[ "$alloc_phymem_rounded" -eq 2 ]]; then	
+					read -r -p "WARNING!: System memory is is barely enough for running this software.Do you wish to continue ? [y/N] " low_mem_response
+					case $low_mem_response in
+					[yY][eE][sS]|[yY]) 
+					;;
+					*)
+					sleep 1
+					exit
+					;;
+					esac
+				fi
+			fi
+
+			alloc_phymem_string="-Xmx"$alloc_phymem_rounded"g"
+			sed -i -e "s/-Xmx2g/$alloc_phymem_string/g" $red5_sh_file # improve this
+			lecho "JVM memory size is set to $alloc_phymem_rounded Gb!"
+			sleep 1
+
+			if [ ! $# -eq 0 ];  then
+				pause
+			fi
+		fi
+	fi
+}
 
 
 # Private
@@ -465,6 +587,14 @@ download_latest()
 	cd $dir
 
 	# echo $dir
+	red5pro_com_login_form	
+}
+
+
+
+red5pro_com_login_form()
+{
+
 	rpro_form_valid=1
 	echo "Please enter your red5pro.com login details"
 	
@@ -528,11 +658,30 @@ download_latest()
 			fi
 		else
 			lecho "Failed to authenticate with website!"
+			read -r -p " -- Retry? [y/N] " try_login_response
+			case $try_login_response in
+			[yY][eE][sS]|[yY]) 
+			download_latest
+			;;
+			*)
+			latest_rpro_download_success=0
+			;;
+			esac
 		fi
 		
 	else
-		lecho "Invalid HTTP request parameters"
+		lecho "Invalid request parameters"
+		read -r -p " -- Retry? [y/N] " try_login_response
+		case $try_login_response in
+		[yY][eE][sS]|[yY]) 
+		download_latest
+		;;
+		*)
+		latest_rpro_download_success=0
+		;;
+		esac
 	fi
+
 }
 
 
@@ -590,20 +739,9 @@ auto_install_rpro()
 	red5_zip_install_success=0
 
 	# Install prerequisites
-	prerequisites_wget
-
-	# Checking java
-	lecho "Checking java requirements"
-	sleep 2
-	check_java
+	prerequisites
 
 	
-	if [ "$has_min_java_version" -eq 0 ]; then
-		echo "Installing latest java runtime environment..."
-		sleep 2
-
-		install_java
-	fi 
 
 
 	# Download red5 zip from red5pro.com
@@ -651,20 +789,7 @@ auto_install_rpro_url()
 	red5_zip_install_success=0
 
 	# Install prerequisites
-	prerequisites_wget
-
-	# Checking java
-	lecho "Checking java requirements"
-	sleep 2
-	check_java
-
-	
-	if [ "$has_min_java_version" -eq 0 ]; then
-		echo "Installing latest java runtime environment..."
-		sleep 2
-
-		install_java
-	fi 
+	prerequisites	
 
 
 	# Download red5 zip from url
@@ -771,8 +896,8 @@ install_rpro_zip()
 {
 	red5_zip_install_success=0
 
-	prerequisites_unzip
-
+	# Install prerequisites
+	# prerequisites [ extra not needed ]
 			
 	clear
 	lecho "Installing red5pro from zip"
@@ -942,6 +1067,9 @@ install_rpro_zip()
 
 	# Install additional libraries
 	postrequisites
+
+	# JVM meory update
+	modify_jvm_memory
 
 
 	# Installing red5 service
@@ -1238,12 +1366,29 @@ stop_red5pro_service()
 	fi
 
 	echo "[ NOTE: It may take a few seconds for service shutdown to complete ]"
-	sleep 5
+	sleep 10
 
 	if [ $# -eq 0 ]
 	  then
 	    pause
 	fi
+}
+
+
+
+
+stop_red5pro_service_now()
+{
+	cd ~
+
+	check_current_rpro 0 1 # passing 2 params for silent check
+
+	lecho "Killing Red5 Pro if it was running!"
+	cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh force > /dev/null 2>&1 &
+	rm -rf $PIDFILE	
+
+	sleep 3
+	show_simple_menu
 }
 
 
@@ -1310,11 +1455,20 @@ remove_rpro_installation()
 
 check_current_rpro()
 {
-	write_log "Checking for existing Red5Pro installation at install location"
-
 	rpro_exists=0
-	echo "Looking for Red5Pro at default location..."
-	sleep 2
+	check_silent=0
+
+	# IF second param is set then turn on silent mode quick check
+	if [ $# -eq 2 ]; then
+		check_silent=1		
+	fi
+
+
+	if [ ! "$check_silent" -eq 1 ] ; then
+		lecho "Looking for Red5Pro at default install location..."
+		sleep 2
+	fi
+
 
 	if [ ! -d $DEFAULT_RPRO_PATH ]; then
   		lecho "No Red5pro installation found at default location : $DEFAULT_RPRO_PATH"
@@ -1326,7 +1480,10 @@ check_current_rpro()
 		rpro_exists=1
 		else
 		rpro_exists=1
+
+		if [ ! "$check_silent" -eq 1 ] ; then
 		lecho "Red5pro installation found at default location : $DEFAULT_RPRO_PATH"
+		fi
 
 		pattern='server.version*'
 		replace=""
@@ -1341,6 +1498,8 @@ check_current_rpro()
 
 		fi
 	fi
+
+
 
 	if [ $# -eq 0 ]; then
 		pause		
@@ -1947,8 +2106,9 @@ simple_menu()
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "5. --- START RED5PRO"
 	echo "6. --- STOP RED5PRO"
+	echo "7. --- STOP RED5PRO [FORCE TERMINATION] "
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "7. BACK TO MODE SELECTION"
+	echo "8. BACK TO MODE SELECTION"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "0. Exit"
 	echo "                             "
@@ -1975,7 +2135,8 @@ simple_menu_read_options(){
 		4) show_licence_menu ;;
 		5) start_red5pro_service ;;
 		6) stop_red5pro_service ;;
-		7) main ;;
+		7) stop_red5pro_service_now ;;
+		8) main ;;
 		0) exit 0;;
 		*) echo -e "${RED}Error...${STD}" && sleep 2
 	esac
@@ -2183,14 +2344,68 @@ main()
 
 ############################ prerequisites FUNCTION ##################################
 
+prerequisites()
+{
+	lecho "Checking installation prerequisites..."
+	sleep 2
+
+	prerequisites_update
+
+	prerequisites_java
+	prerequisites_unzip
+	prerequisites_wget
+	prerequisites_bc
+}
+
+
+
+prerequisites_java()
+{
+
+	# Checking java
+	lecho "Checking java requirements"
+	sleep 2
+	check_java
+
+	
+	if [ "$has_min_java_version" -eq 0 ]; then
+		echo "Installing latest java runtime environment..."
+		sleep 2
+
+		install_java
+	fi 
+}
+
+
+
+prerequisites_update()
+{
+
+	if isDebian; then
+	prerequisites_update_deb
+	else
+	prerequisites_update_rhl
+	fi
+}
+
+
+prerequisites_update_deb()
+{
+	apt-get update
+}
+
+
+
+prerequisites_update_rhl()
+{
+	yum -y update
+}
+
+
 
 
 prerequisites_unzip()
-{
-	# Checking unzip
-	lecho "Checking for unzip"
-	sleep 2
-	
+{	
 	check_unzip
 
 
@@ -2207,10 +2422,6 @@ prerequisites_unzip()
 
 prerequisites_wget()
 {
-
-	# Checking wget
-	lecho "Checking for wget"
-	sleep 2
 	
 	check_wget
 
@@ -2223,6 +2434,22 @@ prerequisites_wget()
 	fi 
 }
 
+
+
+
+prerequisites_bc()
+{
+	
+	check_bc
+
+
+	if [[ $bc_check_success -eq 0 ]]; then
+		echo "Installing bc..."
+		sleep 2
+
+		install_bc
+	fi 
+}
 
 
 
@@ -2264,10 +2491,7 @@ postrequisites_deb()
 {
 	write_log "Installing additional dependencies for DEBIAN"
 
-	apt-get install libva1
-	apt-get install libva-drm1
-	apt-get install libva-x11-1
-	apt-get install libvdpau1
+	apt-get install -y libva1 libva-drm1 libva-x11-1 libvdpau1
 }
 
 
@@ -2358,7 +2582,7 @@ repo_has_required_java_deb()
 
 repo_has_required_java_rhl()
 {
-	false
+	true
 }
 
 
