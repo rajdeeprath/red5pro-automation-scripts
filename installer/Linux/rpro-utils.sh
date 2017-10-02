@@ -29,6 +29,8 @@ PIDFILE=/var/run/red5.pid
 
 JAVA_JRE_DOWNLOAD_URL="http://download.oracle.com/otn-pub/java/jdk/8u102-b14/"
 
+
+
 JAVA_32_FILENAME="jre-8u102-linux-i586.rpm"
 JAVA_64_FILENAME="jre-8u102-linux-x64.rpm"
 
@@ -207,7 +209,7 @@ check_unzip()
 
 	if isinstalled unzip; then
 	unzip_check_success=1
-	lecho "unzip utility was found"		
+	write_log "unzip utility was found"		
 	else
 	unzip_check_success=0
 	lecho "unzip utility not found."				
@@ -225,13 +227,27 @@ check_wget()
 
 	if isinstalled wget; then
 	wget_check_success=1
-	lecho "wget utility was found"
+	write_log "wget utility was found"
 	else
 	wget_check_success=0
 	lecho "wget utility not found."
 	fi
 }
 
+
+check_bc()
+{
+	write_log "Checking for bc utility"	
+	bc_check_success=0
+
+	if isinstalled bc; then
+	bc_check_success=1
+	write_log "bc utility was found"
+	else
+	bc_check_success=0
+	lecho "bc utility not found."
+	fi
+}
 
 
 # Public
@@ -269,7 +285,9 @@ install_java()
 install_java_deb()
 {
 	lecho "Installing Java for Debian";
+	apt-get install -y default-jre
 
+	: '
 	if repo_has_required_java_deb; then
 		write_log "Installing java from repo -> default-jre"
 		apt-get update
@@ -281,6 +299,7 @@ install_java_deb()
 
 		apt-get install oracle-java8-installer
 	fi
+	'
 }
 
 
@@ -288,11 +307,14 @@ install_java_deb()
 # Private
 install_java_rhl()
 {
-	lecho "Installing Java 8 for CentOs";
-	
+	lecho "Installing Java for CentOs";
+	yum -y install java	
+
+	: '
 
 	if repo_has_required_java_rhl; then
 		write_log "Installing java from repo -> default-jre"
+		yum install java-1.8.0-openjdk
 	else
 
 		if [ $IS_64_BIT -eq 1 ]; then
@@ -304,10 +326,7 @@ install_java_rhl()
 		fi
 
 		write_log "Installing java from rpm -> oracle-java8-installer -> $java_url"
-		
-
 		cd ~
-
 
 
 		# Remove installer if exists
@@ -341,6 +360,7 @@ install_java_rhl()
 			rm ~/$java_installer
 		fi
 	fi
+	'
 }
 
 
@@ -366,7 +386,7 @@ install_unzip_deb()
 	write_log "Installing unzip on debian"
 
 	apt-get update
-	apt-get install unzip
+	apt-get install -y unzip
 
 	install_unzip="$(which unzip)";
 	lecho "Unzip installed at $install_unzip"
@@ -380,7 +400,7 @@ install_unzip_rhl()
 	write_log "Installing unzip on rhle"
 
 	# yup update
-	yum install unzip
+	yum -y install unzip
 
 	install_unzip="$(which unzip)";
 	lecho "Unzip installed at $install_unzip"
@@ -403,13 +423,25 @@ install_wget()
 
 
 
+install_bc()
+{
+	write_log "Installing bc"
+
+	if isDebian; then
+	install_bc_deb	
+	else
+	install_bc_rhl
+	fi		
+}
+
+
 # Private
 install_wget_deb()
 {
 	write_log "Installing wget on debian"
 
 	apt-get update
-	apt-get install wget
+	apt-get install -y wget
 
 	install_wget="$(which wget)";
 	lecho "wget installed at $install_wget"
@@ -423,12 +455,39 @@ install_wget_rhl()
 	write_log "Installing wget on rhle"
 
 	# yup update
-	yum install wget
+	yum -y install wget
 
 	install_wget="$(which wget)";
 	lecho "wget installed at $install_wget"
 }
 
+
+
+
+# Private
+install_bc_deb()
+{
+	write_log "Installing bc on debian"
+
+	apt-get install -y bc
+
+	install_bc="$(which bc)";
+	lecho "bc installed at $install_bc"
+}
+
+
+
+# Private
+install_bc_rhl()
+{
+	write_log "Installing bc on rhle"
+
+	# yup update
+	yum -y install bc
+
+	install_bc="$(which bc)";
+	lecho "bc installed at $install_bc"
+}
 
 
 
@@ -497,7 +556,7 @@ modify_jvm_memory()
 
 			alloc_phymem_string="-Xmx"$alloc_phymem_rounded"g"
 			sed -i -e "s/-Xmx2g/$alloc_phymem_string/g" $red5_sh_file # improve this
-			lecho "JVM memory size updated to use $alloc_phymem_rounded Gb!"
+			lecho "JVM memory size is set to $alloc_phymem_rounded Gb!"
 			sleep 1
 
 			if [ ! $# -eq 0 ];  then
@@ -680,7 +739,7 @@ auto_install_rpro()
 	red5_zip_install_success=0
 
 	# Install prerequisites
-	prerequisites_wget
+	prerequisites
 
 	# Checking java
 	lecho "Checking java requirements"
@@ -741,7 +800,7 @@ auto_install_rpro_url()
 	red5_zip_install_success=0
 
 	# Install prerequisites
-	prerequisites_wget
+	prerequisites	
 
 	# Checking java
 	lecho "Checking java requirements"
@@ -861,8 +920,8 @@ install_rpro_zip()
 {
 	red5_zip_install_success=0
 
-	prerequisites_unzip
-
+	# Install prerequisites
+	prerequisites
 			
 	clear
 	lecho "Installing red5pro from zip"
@@ -1430,7 +1489,7 @@ check_current_rpro()
 
 
 	if [ ! "$check_silent" -eq 1 ] ; then
-		lecho "Looking for Red5Pro at default location..."
+		lecho "Looking for Red5Pro at default install location..."
 		sleep 2
 	fi
 
@@ -2309,14 +2368,47 @@ main()
 
 ############################ prerequisites FUNCTION ##################################
 
+prerequisites()
+{
+	lecho "Checking installation prerequisites..."
+	sleep 2
+
+	prerequisites_update
+
+	prerequisites_unzip
+	prerequisites_wget
+	prerequisites_bc
+}
+
+
+prerequisites_update()
+{
+
+	if isDebian; then
+	prerequisites_update_deb
+	else
+	prerequisites_update_rhl
+	fi
+}
+
+
+prerequisites_update_deb()
+{
+	apt-get update
+}
+
+
+
+prerequisites_update_rhl()
+{
+	yum -y update
+}
+
+
 
 
 prerequisites_unzip()
-{
-	# Checking unzip
-	lecho "Checking for unzip"
-	sleep 2
-	
+{	
 	check_unzip
 
 
@@ -2333,10 +2425,6 @@ prerequisites_unzip()
 
 prerequisites_wget()
 {
-
-	# Checking wget
-	lecho "Checking for wget"
-	sleep 2
 	
 	check_wget
 
@@ -2349,6 +2437,22 @@ prerequisites_wget()
 	fi 
 }
 
+
+
+
+prerequisites_bc()
+{
+	
+	check_bc
+
+
+	if [[ $bc_check_success -eq 0 ]]; then
+		echo "Installing bc..."
+		sleep 2
+
+		install_bc
+	fi 
+}
 
 
 
@@ -2390,10 +2494,7 @@ postrequisites_deb()
 {
 	write_log "Installing additional dependencies for DEBIAN"
 
-	apt-get install libva1
-	apt-get install libva-drm1
-	apt-get install libva-x11-1
-	apt-get install libvdpau1
+	apt-get install -y libva1 libva-drm1 libva-x11-1 libvdpau1
 }
 
 
@@ -2484,7 +2585,7 @@ repo_has_required_java_deb()
 
 repo_has_required_java_rhl()
 {
-	false
+	true
 }
 
 
