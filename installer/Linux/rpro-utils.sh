@@ -15,8 +15,20 @@ OS_TYPE=
 OS_DEB="DEBIAN"
 OS_RHL="REDHAT"
  
-SERVICE_LOCATION=/etc/init.d
-SERVICE_NAME=red5pro 
+SERVICE_LOCATION_V1=/etc/init.d
+SERVICE_NAME_V1=red5pro 
+
+
+SERVICE_LOCATION_V2=/lib/systemd/system
+SERVICE_NAME_V2=red5pro.service
+
+
+SERVICE_LOCATION=
+SERVICE_NAME=
+
+
+SERVICE_VERSION=1
+
 RED5SH=red5.sh
 SERVICE_INSTALLER=/usr/sbin/update-rc.d
 IS_64_BIT=0
@@ -517,6 +529,7 @@ modify_jvm_memory()
 
 
 	check_current_rpro 1
+
 	if [[ $rpro_exists -eq 1 ]]; then
 
 		red5_sh_file=$rpro_path/$RED5SH
@@ -529,32 +542,10 @@ modify_jvm_memory()
 			lecho "Calculating maximum allocatable memory"
 			sleep 1
 
-			low_mem_response=
-			phymem=$(free -m|awk '/^Mem:/{print $2}') # Value in Mb
-			# echo "Total Memory in MB = $phymem"
-			alloc_phymem=$(awk "BEGIN { pc=${phymem}*${RED5PRO_MEMORY_PCT}/100; print int(pc);}") # calculate percentage to allocate
-			alloc_phymem=$(bc <<< "scale=1;$alloc_phymem/1024") # Mb to Gb
-			alloc_phymem_rounded=$(printf "%.0f" $alloc_phymem) # Round off
-
-			if [[ "$alloc_phymem_rounded" -lt 2 ]]; then
-				lecho "SEVERE!: System memory is insufficient for running this software.Installation cannot continue !!"
-				read -r -p "Press any key to exit  " low_mem_response
-				exit
-			else 
-				if [[ "$alloc_phymem_rounded" -eq 2 ]]; then	
-					read -r -p "WARNING!: System memory is is barely enough for running this software.Do you wish to continue ? [y/N] " low_mem_response
-					case $low_mem_response in
-					[yY][eE][sS]|[yY]) 
-					;;
-					*)
-					sleep 1
-					exit
-					;;
-					esac
-				fi
-			fi
-
+			# JVM memory allocation
+			eval_memory_to_allocate			
 			alloc_phymem_string="-Xmx"$alloc_phymem_rounded"g"
+
 			sed -i -e "s/-Xmx2g/$alloc_phymem_string/g" $red5_sh_file # improve this
 			lecho "JVM memory size is set to $alloc_phymem_rounded Gb!"
 			sleep 1
@@ -565,6 +556,40 @@ modify_jvm_memory()
 		fi
 	fi
 }
+
+
+
+# Private
+eval_memory_to_allocate()
+{
+	low_mem_response=
+
+	phymem=$(free -m|awk '/^Mem:/{print $2}') # Value in Mb
+	# echo "Total Memory in MB = $phymem"
+	alloc_phymem=$(awk "BEGIN { pc=${phymem}*${RED5PRO_MEMORY_PCT}/100; print int(pc);}") # calculate percentage to allocate
+	alloc_phymem=$(bc <<< "scale=1;$alloc_phymem/1024") # Mb to Gb
+	alloc_phymem_rounded=$(printf "%.0f" $alloc_phymem) # Round off
+
+	if [[ "$alloc_phymem_rounded" -lt 2 ]]; then
+		lecho "SEVERE!: System memory is insufficient for running this software.Installation cannot continue !!"
+		read -r -p "Press any key to exit  " low_mem_response
+		exit
+	else 
+		if [[ "$alloc_phymem_rounded" -eq 2 ]]; then	
+			read -r -p "WARNING!: System memory is is barely enough for running this software.Do you wish to continue ? [y/N] " low_mem_response
+			case $low_mem_response in
+			[yY][eE][sS]|[yY]) 
+			;;
+			*)
+			sleep 1
+			exit
+			;;
+			esac
+		fi
+	fi
+
+}
+
 
 
 # Private
@@ -1068,8 +1093,6 @@ install_rpro_zip()
 	# Install additional libraries
 	postrequisites
 
-	# JVM meory update
-	modify_jvm_memory
 
 
 	# Installing red5 service
@@ -1110,8 +1133,40 @@ install_rpro_zip()
 
 
 
+
 # Public
 register_rpro_service()
+{
+	if [ "$SERVICE_VERSION" -eq "1" ]; then
+	   register_rpro_service_v1
+	else
+	   register_rpro_service_v2
+	fi	
+}
+
+
+
+# Public
+unregister_rpro_service()
+{
+	
+	if [ "$SERVICE_VERSION" -eq "1" ]; then
+	   unregister_rpro_service_v1
+	else
+	   unregister_rpro_service_v2
+	fi	
+}
+
+
+
+
+
+
+######################### V1 #########################
+
+
+# Private
+register_rpro_service_v1()
 {
 
 	rpro_service_install_success=0
@@ -1120,7 +1175,6 @@ register_rpro_service()
 	sleep 2
 
 
-#######################################################
 
 service_script="#!/bin/sh
 ### BEGIN INIT INFO
@@ -1153,7 +1207,7 @@ start() {
 }
 
 stop() {
-  cd \${RED5_HOME} && ./red5-shutdown.sh > /dev/null 2>&1 &
+  cd \${RED5_HOME} && ./red5-shutdown.sh force > /dev/null 2>&1 &
 }
 
 
@@ -1168,6 +1222,7 @@ case \"\$1\" in
   ;;
   restart)
     stop
+    sleep 2
     start
     exit 1
   ;;
@@ -1178,7 +1233,7 @@ case \"\$1\" in
 
 esac"
 
-#######################################################
+
 
 	lecho "Writing service script"
 	sleep 1
@@ -1188,8 +1243,13 @@ esac"
 	# write script to file
 	echo "$service_script" > /etc/init.d/red5pro
 
+	sleep 1
+
+	# JVM memory update
+	modify_jvm_memory
+
 	# make service file executable
-	chmod 777 /etc/init.d/red5pro
+	chmod 644 /etc/init.d/red5pro
 
 	if isDebian; then
 	register_rpro_service_deb	
@@ -1201,6 +1261,8 @@ esac"
 	lecho "Red5Pro service installed successfully!"
 	rpro_service_install_success=1
 }
+
+
 
 
 
@@ -1239,8 +1301,8 @@ register_rpro_service_rhl()
 
 
 
-# Public
-unregister_rpro_service()
+# Private
+unregister_rpro_service_v1()
 {
 	rpro_service_remove_success=0
 	
@@ -1250,7 +1312,7 @@ unregister_rpro_service()
 	sleep 2
 
 
-	if [ -f "$SERVICE_LOCATION/$SERVICE_NAME" ];	then
+	if [ -f /etc/init.d/red5pro ];	then
 	
 
 		# 1. Terminate service if running
@@ -1308,8 +1370,217 @@ unregister_rpro_service_rhl()
 }
 
 
+# Private
+start_red5pro_service_v1()
+{
+	/etc/init.d/red5pro start /dev/null 2>&1 &
+
+	echo "[ NOTE: It may take a few seconds for server to complete start up.Please wait.. ]"
+	sleep 15
+}
 
 
+
+# Private
+stop_red5pro_service_v1()
+{
+	/etc/init.d/red5pro stop /dev/null 2>&1 &
+
+	lecho "[ NOTE: It may take a few seconds for service shutdown to complete.Please wait.. ]"
+	sleep 15
+}
+
+
+
+
+####################### V2 #############################
+
+
+# Private
+register_rpro_service_v2()
+{
+	rpro_service_install_success=0
+
+
+	lecho "Preparing to install service..."
+	sleep 2
+
+
+	# JVM memory allocation
+	eval_memory_to_allocate
+	alloc_phymem_string="-Xmx"$alloc_phymem_rounded"g"
+
+
+	# Installing service manager
+	if isDebian; then
+	install_service_prerequisite_deb	
+	else
+	install_service_prerequisite_rhl
+	fi
+
+
+	if isDebian; then
+	JAVA_ENV=/usr/lib/jvm/java-8-openjdk-amd64	
+	else
+	JAVA_ENV=/usr/lib/jvm/jre-1.8.0-openjdk
+	fi
+
+	
+
+service_script="[Unit]
+Description=Red5 Pro
+After=syslog.target network.target
+
+[Service]
+Type=forking
+Environment=PID=$PID
+Environment=JAVA_HOME=$JAVA_ENV
+Environment=RED5_HOME=$DEFAULT_RPRO_PATH
+WorkingDirectory=$DEFAULT_RPRO_PATH
+ExecStart=/usr/bin/jsvc -debug \
+    -home \${JAVA_HOME} \
+    -cwd \${RED5_HOME} \
+    -cp \${RED5_HOME}/commons-daemon-1.0.15.jar:\${RED5_HOME}/red5-service.jar:\${RED5_HOME}/conf \
+    -Dred5.root=\${RED5_HOME} \
+    -Djava.library.path=\${RED5_HOME}/lib/amd64-Linux-gpp/jni \
+    -Djava.security.debug=failure -Djava.security.egd=file:/dev/./urandom \
+    -Dcatalina.home=\${RED5_HOME} -Dcatalina.useNaming=true \
+    -Dorg.terracotta.quartz.skipUpdateCheck=true \
+    -Xms256m \${alloc_phymem_string} -Xverify:none \
+    -XX:+TieredCompilation -XX:+UseBiasedLocking \
+    -XX:MaxMetaspaceSize=128m -XX:+UseParNewGC -XX:+UseConcMarkSweepGC \
+    -XX:InitialCodeCacheSize=8m -XX:ReservedCodeCacheSize=32m \
+    -outfile \${RED5_HOME}/log/jsvc-service.log -errfile \${RED5_HOME}/log/jsvc-error.log \
+    -wait 60 \
+    -umask 011 \
+    -pidfile \${PID} org.red5.daemon.EngineLauncher 9999
+
+ExecStop=/usr/bin/jsvc -stop -pidfile \${PID} org.red5.daemon.EngineLauncher 9999
+
+[Install]
+WantedBy=multi-user.target
+"
+
+
+
+	lecho "Writing service script"
+	sleep 1
+
+	touch /lib/systemd/system/red5pro.service
+
+	# write script to file
+	echo "$service_script" > /lib/systemd/system/red5pro.service
+
+	# make service file executable
+	chmod 644 /lib/systemd/system/red5pro.service
+
+	register_rpro_service_generic_v2
+
+	lecho "Red5Pro service installed successfully!"
+	rpro_service_install_success=1	
+}
+
+
+
+# Private
+install_service_prerequisite_deb()
+{
+	apt-get install -y jsvc
+}
+
+
+
+# Private
+install_service_prerequisite_rhl()
+{
+	yum -y install jsvc
+}
+
+
+
+# Private
+register_rpro_service_generic_v2()
+{
+
+	lecho "Registering service \"$SERVICE_NAME\""
+	sleep 1	
+
+	# Reload daemon 
+	systemctl daemon-reload
+
+	lecho "Enabling service \"$SERVICE_NAME\""
+
+	# enable service
+	systemctl enable red5pro.service
+}
+
+
+
+# Private
+unregister_rpro_service_generic_v2()
+{
+	lecho "Unregistering service \"$SERVICE_NAME\""
+	sleep 1	
+
+	# Reload daemon 
+	systemctl daemon-reload
+
+	lecho "Disabling service \"$SERVICE_NAME\""
+
+	# disaable service
+	systemctl disable red5pro.service
+
+	
+}
+
+
+
+# Private
+unregister_rpro_service_v2()
+{
+	rpro_service_remove_success=0
+	
+	prog="red5"
+
+	lecho "Preparing to remove service..."
+	sleep 2
+
+
+	if [ -f /lib/systemd/system/red5pro.service ];	then
+	
+		unregister_rpro_service_generic_v2
+
+		# remove service
+		rm /etc/systemd/system/red5pro.service
+
+		lecho "Service removed successfully"
+		rpro_service_remove_success=0
+	
+	else
+		lecho "Red5pro service was not found"
+	fi
+}
+
+
+
+# Private
+start_red5pro_service_v2()
+{
+	systemctl start red5pro
+}
+
+
+
+# Private
+stop_red5pro_service_v2()
+{
+	systemctl stop red5pro
+}
+
+
+
+
+############################################################
 
 
 
@@ -1323,20 +1594,19 @@ start_red5pro_service()
 		
 		cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5.sh > /dev/null 2>&1 &
 
-		# RETVAL=$?
-		# PID=$!
-
-		# if [ $RETVAL -eq 0 ]; then
-		# 	echo $PID > "$PIDFILE"
-		# fi
 	else
 		lecho "Red5Pro service was found at $SERVICE_LOCATION/$SERVICE_NAME"
 		lecho " Attempting to start service"
-		/etc/init.d/red5pro start /dev/null 2>&1 &
+
+		if [ "$SERVICE_VERSION" -eq "1" ]; then
+		start_red5pro_service_v1
+		else
+		start_red5pro_service_v2
+		fi
+		
 	fi
 
-	# echo "[ NOTE: It may take a few seconds for service startup to complete ]"
-	sleep 5
+
 
 	if [ $# -eq 0 ]
 	  then
@@ -1356,17 +1626,18 @@ stop_red5pro_service()
 		lecho "It seems Red5Pro service was not installed. Please register Red5pro service from the menu for best results."
 		lecho " Attempting to stop using \"red5-shutdown.sh\""
 
-		cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh > /dev/null 2>&1 &
-		rm -rf $PIDFILE		
+		cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh > /dev/null 2>&1 &	
 	else
 		lecho "Red5Pro service was found at $SERVICE_LOCATION/$SERVICE_NAME."
 		lecho "Attempting to stop red5pro service"
 
-		/etc/init.d/red5pro stop /dev/null 2>&1 &
+		if [ "$SERVICE_VERSION" -eq "1" ]; then
+		stop_red5pro_service_v1
+		else
+		stop_red5pro_service_v2
+		fi
 	fi
 
-	echo "[ NOTE: It may take a few seconds for service shutdown to complete ]"
-	sleep 10
 
 	if [ $# -eq 0 ]
 	  then
@@ -1384,24 +1655,11 @@ stop_red5pro_service_now()
 	check_current_rpro 0 1 # passing 2 params for silent check
 
 	lecho "Killing Red5 Pro if it was running!"
-	cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh force > /dev/null 2>&1 &
-	rm -rf $PIDFILE	
+	cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh force > /dev/null 2>&1 &	
 
 	sleep 3
 	show_simple_menu
 }
-
-
-
-# TO DO
-is_red5_running()
-{	
-	if [ -f $PIDFILE ]; then
-		echo ""	
-	fi
-	
-}
-
 
 
 
@@ -1448,7 +1706,6 @@ remove_rpro_installation()
 
 	
 }
-
 
 
 
@@ -2259,6 +2516,19 @@ detect_system()
 	else
 	OS_TYPE=$OS_RHL
 	fi
+
+
+	# Service installer mode selection
+	if [ "$SERVICE_VERSION" -eq "1" ]; then
+	SERVICE_LOCATION=$SERVICE_LOCATION_V1
+	SERVICE_NAME=$SERVICE_NAME_V1
+	echo -e "* Service Deployment : \e[36mClassic\e[m"
+	else
+	SERVICE_LOCATION=$SERVICE_LOCATION_V2
+	SERVICE_NAME=$SERVICE_NAME_V2
+	echo -e "* Service Deployment : \e[36mModern\e[m"
+	fi
+
 
 	write_log "OS TYPE $OS_TYPE"
 
