@@ -36,7 +36,7 @@ OS_NAME=
 OS_VERSION=
 MODE=0
 
-PIDFILE=/var/run/red5.pid
+PID=/var/run/red5pro.pid
 
 
 JAVA_JRE_DOWNLOAD_URL="http://download.oracle.com/otn-pub/java/jdk/8u102-b14/"
@@ -262,6 +262,22 @@ check_bc()
 }
 
 
+
+check_jsvc()
+{
+	write_log "Checking for jsvc utility"	
+	jsvc_check_success=0
+
+	if isinstalled jsvc; then
+	jsvc_check_success=1
+	write_log "jsvc utility was found"
+	else
+	jsvc_check_success=0
+	lecho "jsvc utility not found."
+	fi
+}
+
+
 # Public
 install_java()
 {
@@ -373,6 +389,45 @@ install_java_rhl()
 		fi
 	fi
 	'
+}
+
+
+
+
+# Public
+install_jsvc()
+{
+	write_log "Installing jsvc"
+
+	if isDebian; then
+	install_jsvc_deb	
+	else
+	install_jsvc_rhl
+	fi		
+}
+
+
+
+# Private
+install_jsvc_deb()
+{
+	write_log "Installing jsvc on debian"
+	apt-get install -y jsvc
+
+	install_jsvc="$(which jsvc)";
+	lecho "jsvc installed at $install_jsvc"
+}
+
+
+
+# Private
+install_jsvc_rhl()
+{
+	write_log "Installing jsvc on rhl"
+	yum -y install jsvc
+
+	install_jsvc="$(which jsvc)";
+	lecho "jsvc installed at $install_jsvc"
 }
 
 
@@ -576,15 +631,19 @@ eval_memory_to_allocate()
 		exit
 	else 
 		if [[ "$alloc_phymem_rounded" -eq 2 ]]; then	
-			read -r -p "WARNING!: System memory is is barely enough for running this software.Do you wish to continue ? [y/N] " low_mem_response
-			case $low_mem_response in
-			[yY][eE][sS]|[yY]) 
-			;;
-			*)
-			sleep 1
-			exit
-			;;
-			esac
+
+			if [ $# -eq 0 ];  then
+				read -r -p "WARNING!: System memory is is barely enough for running this software.Do you wish to continue ? [y/N] " low_mem_response
+				case $low_mem_response in
+				[yY][eE][sS]|[yY]) 
+				;;
+				*)
+				sleep 1
+				exit
+				;;
+				esac
+			fi
+			
 		fi
 	fi
 
@@ -1059,10 +1118,8 @@ install_rpro_zip()
 	chmod -R 755 $rpro_loc	
 
 	chmod -R ugo+w $rpro_loc
-	
-	chmod +x $rpro_loc/red5.sh
 
-	chmod +x $rpro_loc/red5-shutdown.sh
+	chmod +x $rpro_loc/*.sh
 
 
 	# set path
@@ -1093,6 +1150,8 @@ install_rpro_zip()
 	# Install additional libraries
 	postrequisites
 
+	# JVM memory update
+	modify_jvm_memory
 
 
 	# Installing red5 service
@@ -1192,10 +1251,9 @@ service_script="#!/bin/sh
 PROG=red5
 RED5_HOME=$DEFAULT_RPRO_PATH
 DAEMON=\$RED5_HOME/\$PROG.sh
-PIDFILE=/var/run/\$PROG.pid
+PID=$PID
 
 start() {
-  echo \"Starting Red5pro..\"
   # check to see if the server is already running
   if netstat -an | grep ':5080' > /dev/null 2>&1 ; then
     while netstat -an | grep ':5080' > /dev/null 2>&1 ; do
@@ -1245,11 +1303,9 @@ esac"
 
 	sleep 1
 
-	# JVM memory update
-	modify_jvm_memory
 
 	# make service file executable
-	chmod 644 /etc/init.d/red5pro
+	chmod 777 /etc/init.d/red5pro
 
 	if isDebian; then
 	register_rpro_service_deb	
@@ -1374,8 +1430,6 @@ unregister_rpro_service_rhl()
 start_red5pro_service_v1()
 {
 	/etc/init.d/red5pro start /dev/null 2>&1 &
-
-	echo "[ NOTE: It may take a few seconds for server to complete start up.Please wait.. ]"
 	sleep 15
 }
 
@@ -1385,9 +1439,6 @@ start_red5pro_service_v1()
 stop_red5pro_service_v1()
 {
 	/etc/init.d/red5pro stop /dev/null 2>&1 &
-
-	lecho "[ NOTE: It may take a few seconds for service shutdown to complete.Please wait.. ]"
-	sleep 15
 }
 
 
@@ -1407,16 +1458,12 @@ register_rpro_service_v2()
 
 
 	# JVM memory allocation
-	eval_memory_to_allocate
+	eval_memory_to_allocate 1
 	alloc_phymem_string="-Xmx"$alloc_phymem_rounded"g"
 
 
 	# Installing service manager
-	if isDebian; then
-	install_service_prerequisite_deb	
-	else
-	install_service_prerequisite_rhl
-	fi
+	prerequisites_jsvc
 
 
 	if isDebian; then
@@ -1425,7 +1472,11 @@ register_rpro_service_v2()
 	JAVA_ENV=/usr/lib/jvm/jre-1.8.0-openjdk
 	fi
 
-	
+
+
+#######################################################
+
+
 
 service_script="[Unit]
 Description=Red5 Pro
@@ -1446,7 +1497,7 @@ ExecStart=/usr/bin/jsvc -debug \
     -Djava.security.debug=failure -Djava.security.egd=file:/dev/./urandom \
     -Dcatalina.home=\${RED5_HOME} -Dcatalina.useNaming=true \
     -Dorg.terracotta.quartz.skipUpdateCheck=true \
-    -Xms256m \${alloc_phymem_string} -Xverify:none \
+    -Xms256m -Xmx2g -Xverify:none \
     -XX:+TieredCompilation -XX:+UseBiasedLocking \
     -XX:MaxMetaspaceSize=128m -XX:+UseParNewGC -XX:+UseConcMarkSweepGC \
     -XX:InitialCodeCacheSize=8m -XX:ReservedCodeCacheSize=32m \
@@ -1460,6 +1511,8 @@ ExecStop=/usr/bin/jsvc -stop -pidfile \${PID} org.red5.daemon.EngineLauncher 999
 [Install]
 WantedBy=multi-user.target
 "
+
+#######################################################
 
 
 
@@ -1482,19 +1535,7 @@ WantedBy=multi-user.target
 
 
 
-# Private
-install_service_prerequisite_deb()
-{
-	apt-get install -y jsvc
-}
 
-
-
-# Private
-install_service_prerequisite_rhl()
-{
-	yum -y install jsvc
-}
 
 
 
@@ -1551,7 +1592,7 @@ unregister_rpro_service_v2()
 		unregister_rpro_service_generic_v2
 
 		# remove service
-		rm /etc/systemd/system/red5pro.service
+		rm -f /lib/systemd/system/red5pro.service
 
 		lecho "Service removed successfully"
 		rpro_service_remove_success=0
@@ -1626,7 +1667,7 @@ stop_red5pro_service()
 		lecho "It seems Red5Pro service was not installed. Please register Red5pro service from the menu for best results."
 		lecho " Attempting to stop using \"red5-shutdown.sh\""
 
-		cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh > /dev/null 2>&1 &	
+		cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh force > /dev/null 2>&1 &	
 	else
 		lecho "Red5Pro service was found at $SERVICE_LOCATION/$SERVICE_NAME."
 		lecho "Attempting to stop red5pro service"
@@ -1646,20 +1687,6 @@ stop_red5pro_service()
 }
 
 
-
-
-stop_red5pro_service_now()
-{
-	cd ~
-
-	check_current_rpro 0 1 # passing 2 params for silent check
-
-	lecho "Killing Red5 Pro if it was running!"
-	cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh force > /dev/null 2>&1 &	
-
-	sleep 3
-	show_simple_menu
-}
 
 
 
@@ -2317,7 +2344,7 @@ advance_menu_read_options(){
 		4) upgrade ;;
 		5) main ;;
 		0) exit 0;;
-		*) echo -e "${RED}Error...${STD}" && sleep 2
+		*) echo -e "${RED}Error...${STD}" && sleep 2 && exit 0
 	esac
 }
 
@@ -2363,9 +2390,8 @@ simple_menu()
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "5. --- START RED5PRO"
 	echo "6. --- STOP RED5PRO"
-	echo "7. --- STOP RED5PRO [FORCE TERMINATION] "
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "8. BACK TO MODE SELECTION"
+	echo "7. BACK TO MODE SELECTION"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "0. Exit"
 	echo "                             "
@@ -2392,10 +2418,9 @@ simple_menu_read_options(){
 		4) show_licence_menu ;;
 		5) start_red5pro_service ;;
 		6) stop_red5pro_service ;;
-		7) stop_red5pro_service_now ;;
-		8) main ;;
+		7) main ;;
 		0) exit 0;;
-		*) echo -e "${RED}Error...${STD}" && sleep 2
+		*) echo -e "${RED}Error...${STD}" && sleep 2 && exit 0
 	esac
 }
 
@@ -2720,6 +2745,24 @@ prerequisites_bc()
 		install_bc
 	fi 
 }
+
+
+
+prerequisites_jsvc()
+{
+	check_jsvc
+
+
+	if [[ $jsvc_check_success -eq 0 ]]; then
+		echo "Installing jsvc..."
+		sleep 2
+
+		install_jsvc
+	fi 
+}
+
+
+
 
 
 
