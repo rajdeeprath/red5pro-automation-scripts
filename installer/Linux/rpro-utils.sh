@@ -1459,7 +1459,7 @@ register_rpro_service_v2()
 
 	# JVM memory allocation
 	eval_memory_to_allocate 1
-	alloc_phymem_string="-Xmx"$alloc_phymem_rounded"g"
+	JVM_MEMORY_ALLOC="-Xmx"$alloc_phymem_rounded"g"
 
 
 	# Installing service manager
@@ -1497,7 +1497,7 @@ ExecStart=/usr/bin/jsvc -debug \
     -Djava.security.debug=failure -Djava.security.egd=file:/dev/./urandom \
     -Dcatalina.home=\${RED5_HOME} -Dcatalina.useNaming=true \
     -Dorg.terracotta.quartz.skipUpdateCheck=true \
-    -Xms256m -Xmx2g -Xverify:none \
+    -Xms256m $JVM_MEMORY_ALLOC -Xverify:none \
     -XX:+TieredCompilation -XX:+UseBiasedLocking \
     -XX:MaxMetaspaceSize=128m -XX:+UseParNewGC -XX:+UseConcMarkSweepGC \
     -XX:InitialCodeCacheSize=8m -XX:ReservedCodeCacheSize=32m \
