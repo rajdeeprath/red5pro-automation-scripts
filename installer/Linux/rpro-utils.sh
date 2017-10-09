@@ -116,13 +116,24 @@ cls()
 
 
 
+
+refresh()
+{
+	if [ "$MODE" -eq  1 ]; then
+ 	show_advance_menu
+	else
+ 	show_simple_menu
+	fi
+}
+
+
+
 pause()
 {
 
 	printf "\n"
 	read -r -p 'Press any [ Enter ] key to continue...' key
 
-	echo $MODE
 
 	if [ "$MODE" -eq  1 ]; then
  	show_advance_menu
@@ -1278,14 +1289,8 @@ case \"\$1\" in
     stop
     exit 1
   ;;
-  restart)
-    stop
-    sleep 2
-    start
-    exit 1
-  ;;
   **)
-    echo \"Usage: \$0 {start|stop|restart}\" 1>&2
+    echo \"Usage: \$0 {start|stop}\" 1>&2
     exit 1
   ;;
 
@@ -1441,6 +1446,12 @@ stop_red5pro_service_v1()
 	/etc/init.d/red5pro stop /dev/null 2>&1 &
 }
 
+
+# Private
+restart_red5pro_service_v1()
+{
+	lecho "This feature is not supported in V1 service installer!"
+}
 
 
 
@@ -1619,6 +1630,14 @@ stop_red5pro_service_v2()
 }
 
 
+# Private
+restart_red5pro_service_v2()
+{
+	systemctl restart red5pro
+}
+
+
+
 
 
 ############################################################
@@ -1676,6 +1695,34 @@ stop_red5pro_service()
 		stop_red5pro_service_v1
 		else
 		stop_red5pro_service_v2
+		fi
+	fi
+
+
+	if [ $# -eq 0 ]
+	  then
+	    pause
+	fi
+}
+
+
+
+
+
+restart_red5pro_service()
+{
+	cd ~
+
+	if [ ! -f "$SERVICE_LOCATION/$SERVICE_NAME" ];	then
+		lecho "It seems Red5Pro service was not installed. Please register Red5pro service from the menu for to activate this feature."
+	else
+		lecho "Red5Pro service was found at $SERVICE_LOCATION/$SERVICE_NAME."
+		lecho "Attempting to restart red5pro service"
+
+		if [ "$SERVICE_VERSION" -eq "1" ]; then
+			restart_red5pro_service_v1
+		else
+			restart_red5pro_service_v2
 		fi
 	fi
 
@@ -2390,8 +2437,9 @@ simple_menu()
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "5. --- START RED5PRO"
 	echo "6. --- STOP RED5PRO"
+	echo "7. --- RESTART RED5PRO"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "7. BACK TO MODE SELECTION"
+	echo "8. BACK TO MODE SELECTION"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "0. Exit"
 	echo "                             "
@@ -2418,7 +2466,8 @@ simple_menu_read_options(){
 		4) show_licence_menu ;;
 		5) start_red5pro_service ;;
 		6) stop_red5pro_service ;;
-		7) main ;;
+		7) restart_red5pro_service ;;
+		8) main ;;
 		0) exit 0;;
 		*) echo -e "${RED}Error...${STD}" && sleep 2 && exit 0
 	esac
