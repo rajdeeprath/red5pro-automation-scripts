@@ -1663,10 +1663,14 @@ start_red5pro_service()
 			lecho " Attempting to start service"
 
 			if [ "$SERVICE_VERSION" -eq "1" ]; then
-				start_red5pro_service_v1
+				
+				if !(is_running_red5pro_service 1); then
+					start_red5pro_service_v1
+				else
+					echo "Server is already running!" 
+				fi
 			else		
 
-				# start if not running
 				if !(is_running_red5pro_service 1); then
 					start_red5pro_service_v2
 				else
@@ -1709,9 +1713,14 @@ stop_red5pro_service()
 			lecho "Attempting to stop red5pro service"
 
 			if [ "$SERVICE_VERSION" -eq "1" ]; then	
-				stop_red5pro_service_v1
+
+				if is_running_red5pro_service 1; then
+					stop_red5pro_service_v1
+				else
+					echo "Server is not running!" 
+				fi
+				
 			else
-				# Stop only if running
 				if is_running_red5pro_service 1; then
 					stop_red5pro_service_v2
 				else
@@ -1762,17 +1771,24 @@ restart_red5pro_service()
 }
 
 
-is_running_red5pro_service_v1()
+is_running_red5pro_service_v2()
 {
-	lecho "Not applicable"
+	systemctl status red5pro | grep 'active (running)' &> /dev/null
+	if [ $? == 0 ]; then
+	   true
+	else
+	   false	
+	fi
 }
 
 
 
 
-is_running_red5pro_service_v2()
+is_running_red5pro_service_v1()
 {
-	systemctl status red5pro | grep 'active (running)' &> /dev/null
+	red5_grep=$(ps aux | grep red5)	
+	echo "$red5_grep" | grep 'org.red5.server.Bootstrap' &> /dev/null
+
 	if [ $? == 0 ]; then
 	   true
 	else
