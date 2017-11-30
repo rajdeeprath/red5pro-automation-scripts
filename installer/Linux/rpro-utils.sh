@@ -1648,22 +1648,34 @@ start_red5pro_service()
 {
 	cd ~
 
-	if [ ! -f "$SERVICE_LOCATION/$SERVICE_NAME" ];	then
-		lecho "It seems Red5Pro service was not installed. Please register Red5pro service from the menu for best results."
-		lecho " Attempting to start using \"red5.sh\""
+	check_current_rpro 1 1
+
+	if [ "$rpro_exists" -eq 1 ]; then
+
+		if [ ! -f "$SERVICE_LOCATION/$SERVICE_NAME" ];	then
+			lecho "It seems Red5Pro service was not installed. Please register Red5pro service from the menu for best results."
+			lecho " Attempting to start using \"red5.sh\""
 		
-		cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5.sh > /dev/null 2>&1 &
+			cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5.sh > /dev/null 2>&1 &
 
-	else
-		lecho "Red5Pro service was found at $SERVICE_LOCATION/$SERVICE_NAME"
-		lecho " Attempting to start service"
-
-		if [ "$SERVICE_VERSION" -eq "1" ]; then
-		start_red5pro_service_v1
 		else
-		start_red5pro_service_v2
-		fi
+			lecho "Red5Pro service was found at $SERVICE_LOCATION/$SERVICE_NAME"
+			lecho " Attempting to start service"
+
+			if [ "$SERVICE_VERSION" -eq "1" ]; then
+				start_red5pro_service_v1
+			else		
+
+				# start if not running
+				if !(is_running_red5pro_service 1); then
+					start_red5pro_service_v2
+				else
+					echo "Server is already running!" 
+				fi
+
+			fi
 		
+		fi
 	fi
 
 
@@ -1682,19 +1694,30 @@ stop_red5pro_service()
 {
 	cd ~
 
-	if [ ! -f "$SERVICE_LOCATION/$SERVICE_NAME" ];	then
-		lecho "It seems Red5Pro service was not installed. Please register Red5pro service from the menu for best results."
-		lecho " Attempting to stop using \"red5-shutdown.sh\""
+	check_current_rpro 1 1
 
-		cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh force > /dev/null 2>&1 &	
-	else
-		lecho "Red5Pro service was found at $SERVICE_LOCATION/$SERVICE_NAME."
-		lecho "Attempting to stop red5pro service"
+	if [ "$rpro_exists" -eq 1 ]; then	
 
-		if [ "$SERVICE_VERSION" -eq "1" ]; then
-		stop_red5pro_service_v1
+
+		if [ ! -f "$SERVICE_LOCATION/$SERVICE_NAME" ];	then
+			lecho "It seems Red5Pro service was not installed. Please register Red5pro service from the menu for best results."
+			lecho " Attempting to stop using \"red5-shutdown.sh\""
+
+			cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh force > /dev/null 2>&1 &	
 		else
-		stop_red5pro_service_v2
+			lecho "Red5Pro service was found at $SERVICE_LOCATION/$SERVICE_NAME."
+			lecho "Attempting to stop red5pro service"
+
+			if [ "$SERVICE_VERSION" -eq "1" ]; then	
+				stop_red5pro_service_v1
+			else
+				# Stop only if running
+				if is_running_red5pro_service 1; then
+					stop_red5pro_service_v2
+				else
+					echo "Server is not running!" 
+				fi
+			fi
 		fi
 	fi
 
@@ -1712,17 +1735,22 @@ stop_red5pro_service()
 restart_red5pro_service()
 {
 	cd ~
+	
+	check_current_rpro 1 1
 
-	if [ ! -f "$SERVICE_LOCATION/$SERVICE_NAME" ];	then
-		lecho "It seems Red5Pro service was not installed. Please register Red5pro service from the menu for to activate this feature."
-	else
-		lecho "Red5Pro service was found at $SERVICE_LOCATION/$SERVICE_NAME."
-		lecho "Attempting to restart red5pro service"
+	if [ "$rpro_exists" -eq 1 ]; then
 
-		if [ "$SERVICE_VERSION" -eq "1" ]; then
-			restart_red5pro_service_v1
+		if [ ! -f "$SERVICE_LOCATION/$SERVICE_NAME" ];	then
+			lecho "It seems Red5Pro service was not installed. Please register Red5pro service from the menu for to activate this feature."
 		else
-			restart_red5pro_service_v2
+			lecho "Red5Pro service was found at $SERVICE_LOCATION/$SERVICE_NAME."
+			lecho "Attempting to restart red5pro service"
+
+			if [ "$SERVICE_VERSION" -eq "1" ]; then
+				restart_red5pro_service_v1
+			else
+				restart_red5pro_service_v2
+			fi
 		fi
 	fi
 
@@ -1734,7 +1762,63 @@ restart_red5pro_service()
 }
 
 
+is_running_red5pro_service_v1()
+{
+	lecho "Not applicable"
+}
 
+
+
+
+is_running_red5pro_service_v2()
+{
+	systemctl status red5pro | grep 'active (running)' &> /dev/null
+	if [ $? == 0 ]; then
+	   true
+	else
+	   false	
+	fi
+}
+
+
+
+is_running_red5pro_service()
+{
+	cd ~
+	
+	rpro_running=0
+	check_current_rpro 1 1
+
+	if [ "$rpro_exists" -eq 1 ]; then
+
+		if [ ! -f "$SERVICE_LOCATION/$SERVICE_NAME" ];	then
+			lecho "It seems Red5Pro service was not installed. Please register Red5pro service from the menu for to activate this feature."
+		else			
+
+			if [ "$SERVICE_VERSION" -eq "1" ]; then
+				if is_running_red5pro_service_v1; then
+					rpro_running=1
+				fi
+
+			else
+				if is_running_red5pro_service_v2; then
+					rpro_running=1
+				fi				
+			fi
+		fi
+	fi
+
+
+	if [ $# -eq 0 ]; then
+	    pause
+	else
+	    if [ "$rpro_running" -eq 1 ]; then
+		true
+	    else
+		false
+	    fi
+	fi
+}
 
 
 
@@ -1820,8 +1904,12 @@ check_current_rpro()
 		replace=""
 		while IFS= read line
 		do
-			case "$line" in
-			$pattern) echo "Red5pro build info :" $line | sed -e "s/server.version=/${replace}/g";;
+			case "$line" in			
+			$pattern) 
+				if [ ! "$check_silent" -eq 1 ] ; then
+					lecho "Red5pro build info :" $line | sed -e "s/server.version=/${replace}/g"
+				fi
+			;;
 			*) continue ;;
 			esac
 		
