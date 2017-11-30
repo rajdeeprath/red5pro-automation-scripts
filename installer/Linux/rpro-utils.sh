@@ -725,7 +725,8 @@ red5pro_com_login_form()
 		# POST to site
 		wget --server-response --save-cookies cookies.txt --keep-session-cookies --post-data="email=$rpro_email&password=$rpro_passcode" "https://account.red5pro.com/login" 2>$dir/wsession.txt
 		wget_status=$(< $dir/wsession.txt)
-	
+
+		echo "$(cat $LOG_FILE)$wget_status" > $LOG_FILE	
 
 		# Check http code
 		wget_status_ok=0
@@ -805,7 +806,7 @@ download_from_url()
 	fi
 
 
-	echo "Attempting to download latest Red5 Pro archive file to $RED5PRO_DEFAULT_DOWNLOAD_FOLDER"
+	lecho "Attempting to download latest Red5 Pro archive file to $RED5PRO_DEFAULT_DOWNLOAD_FOLDER"
 
 	wget -O "$RED5PRO_DEFAULT_DOWNLOAD_NAME" "$RED5PRO_DOWNLOAD_URL"
 
@@ -1667,14 +1668,14 @@ start_red5pro_service()
 				if !(is_running_red5pro_service 1); then
 					start_red5pro_service_v1
 				else
-					echo "Server is already running!" 
+					lecho "Server is already running!" 
 				fi
 			else		
 
 				if !(is_running_red5pro_service 1); then
 					start_red5pro_service_v2
 				else
-					echo "Server is already running!" 
+					lecho "Server is already running!" 
 				fi
 
 			fi
@@ -1717,14 +1718,14 @@ stop_red5pro_service()
 				if is_running_red5pro_service 1; then
 					stop_red5pro_service_v1
 				else
-					echo "Server is not running!" 
+					lecho "Server is not running!" 
 				fi
 				
 			else
 				if is_running_red5pro_service 1; then
 					stop_red5pro_service_v2
 				else
-					echo "Server is not running!" 
+					lecho "Server is not running!" 
 				fi
 			fi
 		fi
