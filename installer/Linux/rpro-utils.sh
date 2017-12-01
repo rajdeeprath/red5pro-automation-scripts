@@ -26,8 +26,8 @@ SERVICE_NAME_V2=red5pro.service
 SERVICE_LOCATION=
 SERVICE_NAME=
 
-
-SERVICE_VERSION=1
+# init.d(1) vs modern jsvc(2)
+SERVICE_VERSION=2
 
 RED5SH=red5.sh
 SERVICE_INSTALLER=/usr/sbin/update-rc.d
@@ -41,14 +41,13 @@ PID=/var/run/red5pro.pid
 
 JAVA_JRE_DOWNLOAD_URL="http://download.oracle.com/otn-pub/java/jdk/8u102-b14/"
 
-
-
 JAVA_32_FILENAME="jre-8u102-linux-i586.rpm"
 JAVA_64_FILENAME="jre-8u102-linux-x64.rpm"
 
 RED5PRO_DEFAULT_DOWNLOAD_NAME="red5pro_latest.zip"
 RED5PRO_DEFAULT_DOWNLOAD_FOLDER_NAME="tmp"
 RED5PRO_DEFAULT_DOWNLOAD_FOLDER=
+RED5PRO_INSTALLER_OPERATIONS_CLEANUP=1
 
 RED5PRO_DOWNLOAD_URL=
 RED5PRO_MEMORY_PCT=80
@@ -691,7 +690,10 @@ red5pro_com_login_form()
 {
 
 	rpro_form_valid=1
+
+	echo "============================================="
 	echo "Please enter your 'red5pro.com' login details"
+	echo "============================================="
 	
 	echo "Enter Email : "
 	read rpro_email
@@ -806,7 +808,7 @@ download_from_url()
 	fi
 
 
-	lecho "Attempting to download latest Red5 Pro archive file to $RED5PRO_DEFAULT_DOWNLOAD_FOLDER"
+	lecho "Attempting to download Red5 Pro archive file to $RED5PRO_DEFAULT_DOWNLOAD_FOLDER"
 
 	wget -O "$RED5PRO_DEFAULT_DOWNLOAD_NAME" "$RED5PRO_DOWNLOAD_URL"
 
@@ -1072,19 +1074,19 @@ install_rpro_zip()
 		# remove rpro service
 		unregister_rpro_service
 
-		# check remove folder
+		# check remove old files
 		rm -rf $DEFAULT_RPRO_PATH
 
 		;;
 		*)
-		lecho "Uninstall cancelled"
+		lecho "Operation cancelled"
 		pause
 		;;
 		esac	
 	fi
 
 
-	lecho "Unpacking archive to install location..."
+	lecho "Unpacking archive $rpro_zip_path to install location..."
 	
 	
 	if ! unzip $rpro_zip_path -d $unzip_dest; then
@@ -1140,12 +1142,17 @@ install_rpro_zip()
 	export RED5_HOME=$rpro
  
 
-	# clear tmp directories - IMPORTANT
-	lecho "cleaning up ..."
-	sleep 1
+	# Clear tmp directories - IMPORTANT
+	if [ "$RED5PRO_INSTALLER_OPERATIONS_CLEANUP" -eq 1 ]; then
+		lecho "cleaning up ..."
+		sleep 1
 
-	#rm -rf $dir
-	rm -rf $unzip_dest
+		# Delete unzipped content
+		rm -rf $unzip_dest
+		# Delete zip
+		rm -rf $rpro_zip_path
+	fi
+
 
 	sleep 1	
 
