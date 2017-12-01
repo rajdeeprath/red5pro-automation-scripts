@@ -49,10 +49,21 @@ RED5PRO_DEFAULT_DOWNLOAD_FOLDER_NAME="tmp"
 RED5PRO_DEFAULT_DOWNLOAD_FOLDER=
 RED5PRO_INSTALLER_OPERATIONS_CLEANUP=1
 
+
+RED5PRO_SSL_LETSENCRYPT_FOLDER_NAME="letsencrypt"
+RED5PRO_SSL_LETSENCRYPT_GIT="https://github.com/letsencrypt/letsencrypt"
+RED5PRO_SSL_LETSENCRYPT_FOLDER=
+RED5PRO_SSL_LETSENCRYPT_EXECUTABLE="letsencrypt-auto"
+RED5PRO_SSL_LETSENCRYPT_LOG_FILENAME="letsencrypt.log"
+RED5PRO_SSL_LETSENCRYPT_LOG_FILE=
+
+
 RED5PRO_DOWNLOAD_URL=
 RED5PRO_MEMORY_PCT=80
 
 RED5PRO_DEFAULT_MEMORY_PATTERN="-Xmx2g"
+
+
 
 ######################################################################################
 
@@ -576,6 +587,87 @@ add_update_java()
 
 
 
+######################################################################################
+
+############################# SSL INSTALLER (LetsEncrypt) ############################
+
+letsencrypt_exists()
+{	
+	if [ -d "$RED5PRO_SSL_LETSENCRYPT_FOLDER" ]; then
+		
+		RED5PRO_SSL_LETSENCRYPT__SETUP_FILE="$RED5PRO_SSL_LETSENCRYPT_FOLDER/setup.py"
+
+		if [ -f "$RED5PRO_SSL_LETSENCRYPT__SETUP_FILE" ]; then
+			true
+		else
+			false
+		fi
+	else
+	  false
+	fi
+}
+
+
+letsencrypt_download()
+{
+	letsencrypt_download_success=0
+
+	cd "$CURRENT_DIRECTORY"
+
+	git clone "$RED5PRO_SSL_LETSENCRYPT_GIT"
+	
+	if letsencrypt_exists; then
+
+		letsencrypt_download_success=1
+	else
+		letsencrypt_download_success=0
+	fi
+}
+
+
+rpro_ssl_installer()
+{
+	lecho "Starting Letsencrypt SSL Installer"
+	sleep 2
+
+	# Downloading
+
+	if letsencrypt_exists; then
+		lecho "Letsencrypt found at $RED5PRO_SSL_LETSENCRYPT_FOLDER"
+	else
+		lecho "Downloading letsencrypt ssl cert generator"
+		letsencrypt_download
+		
+		# Recheck
+		if [[ $letsencrypt_download_success -eq 0 ]]; then
+			lecho "Failed to download letsencrypt from github"
+			pause
+		fi
+	fi
+
+
+	# Initializing letsencrypt => Need better way to know if this is first time setup or already setup
+
+	cd "$RED5PRO_SSL_LETSENCRYPT_FOLDER"	
+
+	lecho "===============================" 
+	lecho "Preparing letsencrypt as needed" 
+	lecho "==============================="
+ 
+	./letsencrypt-auto --help 2>&1 | tee -a "$LOG_FILE"
+
+	
+	# Get Certificate
+
+	rpro_ssl_reg_domain="abc.com"
+	rpro_ssl_reg_email="rajdeeprath@gmail.com"
+
+	lecho "==========================" 
+	lecho "Requesting SSL certificate" 
+	lecho "==========================" 
+
+	./letsencrypt-auto certonly --standalone --email "$rpro_ssl_reg_email" --agree-tos -d "$rpro_ssl_reg_domain" 2>&1 | tee -a "$LOG_FILE"
+}
 
 
 ######################################################################################
@@ -2477,9 +2569,9 @@ advance_menu()
 	echo "2. WHICH JAVA AM I USING ?"
 	echo "3. INSTALL RED5 PRO SERVICE"
 	echo "4. UNINSTALL RED5 PRO SERVICE"
-#	echo "5. UPGRADE RED5 PRO FROM LATEST"
+	echo "5. SSL INSTALLER"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "5. BACK TO MODE SELECTION"
+	echo "6. BACK TO MODE SELECTION"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "0. Exit"
 	echo "                             "
@@ -2500,8 +2592,8 @@ advance_menu_read_options(){
 		2) check_java 1 ;;
 		3) register_rpro_as_service ;;
 		4) unregister_rpro_as_service ;;
-		# 4) upgrade ;;
-		5) main ;;
+		5) rpro_ssl_installer ;;
+		6) main ;;
 		0) exit 0;;
 		*) echo -e "${RED}Error...${STD}" && sleep 2 && exit 0
 	esac
@@ -2625,7 +2717,10 @@ load_configuration()
 
 
 	RED5PRO_DEFAULT_DOWNLOAD_FOLDER="$CURRENT_DIRECTORY/$RED5PRO_DEFAULT_DOWNLOAD_FOLDER_NAME"
-	[ ! -d foo ] && mkdir -p $RED5PRO_DEFAULT_DOWNLOAD_FOLDER && chmod ugo+w $RED5PRO_DEFAULT_DOWNLOAD_FOLDER	
+	[ ! -d foo ] && mkdir -p $RED5PRO_DEFAULT_DOWNLOAD_FOLDER && chmod ugo+w $RED5PRO_DEFAULT_DOWNLOAD_FOLDER
+	
+
+	RED5PRO_SSL_LETSENCRYPT_FOLDER="$CURRENT_DIRECTORY/$RED5PRO_SSL_LETSENCRYPT_FOLDER_NAME"
 }
 
 
@@ -2716,7 +2811,6 @@ detect_system()
 
 
 	write_log "OS TYPE $OS_TYPE"
-
 }
 
 
