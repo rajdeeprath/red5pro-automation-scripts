@@ -630,6 +630,7 @@ rpro_ssl_installer()
 	lecho "Starting Letsencrypt SSL Installer"
 	sleep 2
 
+
 	# Downloading
 
 	if letsencrypt_exists; then
@@ -650,23 +651,194 @@ rpro_ssl_installer()
 
 	cd "$RED5PRO_SSL_LETSENCRYPT_FOLDER"	
 
-	lecho "===============================" 
-	lecho "Preparing letsencrypt as needed" 
-	lecho "==============================="
+	lecho "====================================" 
+	lecho "1. Preparing letsencrypt as needed" 
+	lecho "===================================="
  
 	./letsencrypt-auto --help 2>&1 | tee -a "$LOG_FILE"
 
 	
 	# Get Certificate
 
-	rpro_ssl_reg_domain="abc.com"
+	rpro_ssl_reg_domain="testdomain.com"
 	rpro_ssl_reg_email="rajdeeprath@gmail.com"
+	
 
-	lecho "==========================" 
-	lecho "Requesting SSL certificate" 
-	lecho "==========================" 
+	
+	# Create Keystore
 
-	./letsencrypt-auto certonly --standalone --email "$rpro_ssl_reg_email" --agree-tos -d "$rpro_ssl_reg_domain" 2>&1 | tee -a "$LOG_FILE"
+	rpro_ssl_fullchain="/etc/letsencrypt/live/$rpro_ssl_reg_domain/fullchain.pem"
+	rpro_ssl_privkey="/etc/letsencrypt/live/$rpro_ssl_reg_domain/privkey.pem"
+	rpro_ssl_fullchain_and_key="/etc/letsencrypt/live/$rpro_ssl_reg_domain/fullchain_and_key.p12"
+	rpro_ssl_keystore_jks="/etc/letsencrypt/live/$rpro_ssl_reg_domain/keystore.jks"
+	rpro_ssl_tomcat_cer="/etc/letsencrypt/live/$rpro_ssl_reg_domain/tomcat.cer"
+	rpro_ssl_trust_store="etc/letsencrypt/live/$rpro_ssl_reg_domain/truststore.jks"
+	
+
+	# Ask for keystore password here -> input
+	rpro_keystore_cert_pass="xyz123"
+
+
+	#openssl pkcs12 -export -in "$rpro_ssl_fullchain" -inkey "$rpro_ssl_privkey" -out "$rpro_ssl_fullchain_and_key" -name tomcat
+
+	#keytool -importkeystore -deststorepass "$rpro_keystore_cert_pass" -destkeypass "$rpro_keystore_cert_pass" -destkeystore "$rpro_ssl_keystore_jks" -srckeystore "$rpro_ssl_fullchain_and_key" -srcstoretype PKCS12 -srcstorepass "$rpro_keystore_cert_pass" -alias tomcat
+
+	#keytool -export -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_keystore_jks" -storepass "$rpro_keystore_cert_pass" -noprompt
+
+	#keytool -import -trustcacerts -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_trust_store" -storepass "$rpro_keystore_cert_pass" -noprompt
+
+	
+	# if all ok -> Prepare RTMPS Key and Trust store parameters
+	# RTMPS Key and Trust store parameters
+	rpro_ssl_trust_store_rtmps_keystorepass="rtmps.keystorepass=cert.password"
+	rpro_ssl_trust_store_rtmps_keystorefile="rtmps.keystorefile=$rpro_ssl_keystore_jks"
+	rpro_ssl_trust_store_rtmps_truststorepass="rtmps.truststorepass=cert.password"
+	rpro_ssl_trust_store_rtmps_truststorefie="rtmps.truststorefile=$rpro_ssl_trust_store"
+
+
+	
+	lecho "===============================" 
+	lecho "3. Updating configuration files" 
+	lecho "==============================="
+
+	
+
+	## Substitute appropriate files to enable ssl
+
+
+	# Locating files to replace
+
+	red5pro_conf_properties="$DEFAULT_RPRO_PATH/conf/red5.properties"
+	red5pro_conf_jee_container="$DEFAULT_RPRO_PATH/conf/jee-container.xml"
+	
+	red5pro_installer_conf_properties="$CURRENT_DIRECTORY/conf/red5-ssl.properties"
+	red5pro_installer_conf_jee_container="$CURRENT_DIRECTORY/conf/jee-container-ssl.xml"
+
+	config_ssl_jeecontainer
+
+	smart_config_ssl_properties
+
+
+	lecho "Red5 Pro SSL configuration conplete!. Please restart server for changes to take effect."
+	read -r -p "Restart server now ? [y/N] " rpro_restart_response
+	case $rpro_restart_response in
+	[yY][eE][sS]|[yY]) 
+	restart_red5pro_service
+	;;
+	*)
+	show_advance_menu
+	;;
+	esac
+	
+}
+
+
+config_ssl_jeecontainer()
+{
+	lecho "Configuring $red5pro_conf_jee_container.."
+	sleep 1
+
+	if [ ! -f "$red5pro_conf_jee_container" ]; then
+	    lecho "Error : File  $red5pro_conf_jee_container not found!"
+	    pause
+	fi
+	
+	if [ ! -f "$red5pro_installer_conf_jee_container" ]; then
+	    lecho "Error : File  $red5pro_installer_conf_jee_container not found!"
+	    pause
+	fi
+
+	# Replace jee-container config	
+	cp -f "$red5pro_installer_conf_jee_container" "$red5pro_conf_jee_container"
+}
+
+
+
+
+simple_config_ssl_properties()
+{
+	lecho "Configuring $red5pro_conf_properties.."
+
+	if [ ! -f "$red5pro_conf_properties" ]; then
+	    lecho "Error : File  $red5pro_conf_properties not found!"
+	    pause
+	fi
+
+
+	if [ ! -f "$red5pro_installer_conf_properties" ]; then
+	    lecho "Error : File  $red5pro_installer_conf_properties not found!"
+	    pause
+	fi
+
+
+	# Dumb replace red5.properties config
+	cp -f "$red5pro_installer_conf_properties" "$red5pro_conf_properties"
+	sleep 1
+}
+
+
+
+smart_config_ssl_properties()
+{
+	lecho "Configuring $red5pro_conf_properties.."
+
+	# Patterns and replacements
+
+	# HTTP &  HTTPS
+
+	http_port_pattern="http.port=*"
+	http_port_replacement_value="80"
+	https_port_pattern="https.port=*"
+	https_port_replacement_value="443"
+
+
+	# RTMPS
+
+	rtmps_keystorepass_pattern="rtmps.keystorepass=*"
+	rtmps_keystorepass_replacement_value=$rpro_ssl_trust_store_rtmps_keystorepass
+
+	rtmps_keystorefile_pattern="rtmps.keystorefile=*"
+	rtmps_keystorefile_replacement_value=$rpro_ssl_trust_store_rtmps_keystorefile
+
+	rtmps_truststorepass_pattern="rtmps.truststorepass=*"
+	rtmps_truststorepass_replacement_value=$rpro_ssl_trust_store_rtmps_truststorepass
+
+	rtmps_truststorefile_pattern="rtmps.truststorefile=*"
+	rtmps_truststorefile_replacement_value=$rpro_ssl_trust_store_rtmps_truststorefie
+
+	# Websocket
+
+	ws_host_pattern="ws.host=*" 
+	ws_host_replacement_value="0.0.0.0"
+
+	ws_port_pattern="ws.port=*" 
+	ws_port_replacement_value="8081"
+
+	wss_host_pattern="wss.host=*" 
+	wss_host_replacement_value="0.0.0.0"
+
+	wss_port_pattern="wss.port=*" 
+	wss_port_replacement_value="8083"
+
+	ws_config_pattern="ws.port=*" 
+	ws_config_replacement="ws.port=8081"$'\r'"wss.host=$wss_host_replacement_value"$'\r'"wss.port=$wss_port_replacement_value"
+
+
+	# Smart replace red5.properties config
+	while IFS= read line
+		do
+			case "$line" in			
+			$pattern) 
+				if [ ! "$check_silent" -eq 1 ] ; then					
+					red5pro_server_version=$(echo $line | sed -e "s/server.version=/${replace}/g")
+					lecho "Red5 Pro build info : $red5pro_server_version" 
+					break
+				fi
+			;;
+			*) continue ;;
+			esac
+		
+		done <"$red5pro_ini"
 }
 
 
