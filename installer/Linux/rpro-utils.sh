@@ -817,59 +817,73 @@ smart_config_ssl_properties()
 
 	# HTTP &  HTTPS
 
-	http_port_pattern="http.port=*"
-	http_port_replacement_value="80"
-	https_port_pattern="https.port=*"
-	https_port_replacement_value="443"
+	http_port_pattern="http.port=.*"
+	http_port_replacement_value="http.port=80"
+	https_port_pattern="https.port=.*"
+	https_port_replacement_value="https.port=443"
 
 
 	# RTMPS
 
-	rtmps_keystorepass_pattern="rtmps.keystorepass=*"
-	rtmps_keystorepass_replacement_value=$rpro_ssl_trust_store_rtmps_keystorepass
+	rtmps_keystorepass_pattern="rtmps.keystorepass=.*"
+	rtmps_keystorepass_replacement_value="rtmps.keystorepass=$rpro_ssl_trust_store_rtmps_keystorepass"
 
-	rtmps_keystorefile_pattern="rtmps.keystorefile=*"
-	rtmps_keystorefile_replacement_value=$rpro_ssl_trust_store_rtmps_keystorefile
+	rtmps_keystorefile_pattern="rtmps.keystorefile=.*"
+	rtmps_keystorefile_replacement_value="rtmps.keystorefile=$rpro_ssl_trust_store_rtmps_keystorefile"
 
-	rtmps_truststorepass_pattern="rtmps.truststorepass=*"
-	rtmps_truststorepass_replacement_value=$rpro_ssl_trust_store_rtmps_truststorepass
+	rtmps_truststorepass_pattern="rtmps.truststorepass=.*"
+	rtmps_truststorepass_replacement_value="rtmps.truststorepass=$rpro_ssl_trust_store_rtmps_truststorepass"
 
-	rtmps_truststorefile_pattern="rtmps.truststorefile=*"
-	rtmps_truststorefile_replacement_value=$rpro_ssl_trust_store_rtmps_truststorefie
+	rtmps_truststorefile_pattern="rtmps.truststorefile=.*"
+	rtmps_truststorefile_replacement_value="rtmps.truststorefile=$rpro_ssl_trust_store_rtmps_truststorefie"
 
 	# Websocket
 
-	ws_host_pattern="ws.host=*" 
-	ws_host_replacement_value="0.0.0.0"
+	ws_host_pattern="ws.host=.*" 
+	ws_host_replacement_value="ws.host=0.0.0.0"
 
-	ws_port_pattern="ws.port=*" 
-	ws_port_replacement_value="8081"
+	ws_port_pattern="ws.port=.*" 
+	ws_port_replacement_value="ws.port=8081"
 
-	wss_host_pattern="wss.host=*" 
-	wss_host_replacement_value="0.0.0.0"
+	wss_host_pattern="wss.host=.*" 
+	wss_host_replacement_value="wss.host=0.0.0.0"
 
-	wss_port_pattern="wss.port=*" 
-	wss_port_replacement_value="8083"
+	wss_port_pattern="wss.port=.*" 
+	wss_port_replacement_value="wss.port=8083"
 
-	ws_config_pattern="ws.port=*" 
-	ws_config_replacement="ws.port=8081"$'\r'"wss.host=$wss_host_replacement_value"$'\r'"wss.port=$wss_port_replacement_value"
+	ws_config_pattern="ws.port=.*"
+	ws_config_replacement_value="$ws_port_replacement_value\n$wss_host_replacement_value\n$wss_port_replacement_value"
 
+	has_wss_conf=0
 
-	# Smart replace red5.properties config
+	# Check if wss is already configured in the file
 	while IFS= read line
-		do
-			case "$line" in			
-			$pattern) 
-				if [ ! "$check_silent" -eq 1 ] ; then					
-					red5pro_server_version=$(echo $line | sed -e "s/server.version=/${replace}/g")
-					lecho "Red5 Pro build info : $red5pro_server_version" 
-					break
-				fi
+	do
+		case "$line" in			
+			$wss_port_pattern) 
+			has_wss_conf=1
+			break
 			;;
 			*) continue ;;
-			esac
-		
-		done <"$red5pro_ini"
+			esac		
+	
+	done <"$red5pro_conf_properties"
+
+
+	# First pass - Simple replacements
+
+
+	sed -i -e "s|$http_port_pattern|$http_port_replacement_value|" -e "s|$https_port_pattern|$https_port_replacement_value|" -e "s|$rtmps_keystorepass_pattern|$rtmps_keystorepass_replacement_value|" -e "s|$rtmps_keystorefile_pattern|$rtmps_keystorefile_replacement_value|" -e "s|$rtmps_truststorepass_pattern|$rtmps_truststorepass_replacement_value|" -e "s|$rtmps_truststorefile_pattern|$rtmps_truststorefile_replacement_value|"   "$red5pro_conf_properties"
+
+	# Second pass - wss config check & smart replacements
+	if [[ $has_wss_conf -eq 1 ]]; then
+		sed -e "s|$wss_host_pattern|$wss_host_replacement_value|" -e "s|$wss_port_pattern|$wss_port_replacement_value|" "$red5pro_conf_properties"
+	else
+		sed -e "s|$ws_config_pattern|$ws_config_replacement_value|" "$red5pro_conf_properties"
+	fi
+
+
+	pause
 }
 
 

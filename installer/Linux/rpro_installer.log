@@ -1,0 +1,1500 @@
+<13>Dec  4 19:38:52 root: =====================================
+<13>Dec  4 19:38:52 root: NEW INSTALLER SESSION
+<13>Dec  4 19:38:52 root: Distribution: Ubuntu
+<13>Dec  4 19:38:52 root: Version: 16.04
+<13>Dec  4 19:38:52 root: Kernel: 64 Bit
+<13>Dec  4 19:38:52 root: Home directory: /home/rajdeeprath
+<13>Dec  4 19:38:52 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 19:38:52 root: Install directory: /usr/local/red5pro
+<13>Dec  4 19:38:52 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 19:38:52 root: OS TYPE DEBIAN
+<13>Dec  4 19:38:57 root: Advance mode selected
+<13>Dec  4 19:38:57 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 19:38:59 root: Downloading letsencrypt ssl cert generator
+<13>Dec  4 19:39:08 root: ====================================
+<13>Dec  4 19:39:08 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 19:39:08 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 19:39:11 root: ==============================
+<13>Dec  4 19:39:11 root: 2. Requesting SSL certificate
+<13>Dec  4 19:39:11 root: ==============================
+<13>Dec  4 19:39:11 root: ===============================
+<13>Dec  4 19:39:11 root: 3. Updating configuration files
+<13>Dec  4 19:39:11 root: ===============================
+<13>Dec  4 19:39:11 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 19:39:12 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 20:31:03 root: =====================================
+<13>Dec  4 20:31:03 root: NEW INSTALLER SESSION
+<13>Dec  4 20:31:03 root: Distribution: Ubuntu
+<13>Dec  4 20:31:03 root: Version: 16.04
+<13>Dec  4 20:31:03 root: Kernel: 64 Bit
+<13>Dec  4 20:31:03 root: Home directory: /home/rajdeeprath
+<13>Dec  4 20:31:03 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 20:31:03 root: Install directory: /usr/local/red5pro
+<13>Dec  4 20:31:03 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 20:31:03 root: OS TYPE DEBIAN
+<13>Dec  4 20:31:07 root: =====================================
+<13>Dec  4 20:31:07 root: NEW INSTALLER SESSION
+<13>Dec  4 20:31:07 root: Distribution: Ubuntu
+<13>Dec  4 20:31:07 root: Version: 16.04
+<13>Dec  4 20:31:07 root: Kernel: 64 Bit
+<13>Dec  4 20:31:07 root: Home directory: /home/rajdeeprath
+<13>Dec  4 20:31:07 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 20:31:07 root: Install directory: /usr/local/red5pro
+<13>Dec  4 20:31:07 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 20:31:07 root: OS TYPE DEBIAN
+<13>Dec  4 20:31:08 root: Advance mode selected
+<13>Dec  4 20:31:09 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 20:31:11 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 20:31:11 root: ====================================
+<13>Dec  4 20:31:11 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 20:31:11 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 20:31:14 root: ==============================
+<13>Dec  4 20:31:14 root: 2. Requesting SSL certificate
+<13>Dec  4 20:31:14 root: ==============================
+<13>Dec  4 20:31:14 root: ===============================
+<13>Dec  4 20:31:14 root: 3. Updating configuration files
+<13>Dec  4 20:31:14 root: ===============================
+<13>Dec  4 20:31:14 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 20:31:15 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 20:34:48 root: =====================================
+<13>Dec  4 20:34:48 root: NEW INSTALLER SESSION
+<13>Dec  4 20:34:48 root: Distribution: Ubuntu
+<13>Dec  4 20:34:48 root: Version: 16.04
+<13>Dec  4 20:34:48 root: Kernel: 64 Bit
+<13>Dec  4 20:34:48 root: Home directory: /home/rajdeeprath
+<13>Dec  4 20:34:48 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 20:34:48 root: Install directory: /usr/local/red5pro
+<13>Dec  4 20:34:48 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 20:34:48 root: OS TYPE DEBIAN
+<13>Dec  4 20:34:50 root: Advance mode selected
+<13>Dec  4 20:34:50 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 20:34:52 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 20:34:52 root: ====================================
+<13>Dec  4 20:34:52 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 20:34:52 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 20:34:55 root: ==============================
+<13>Dec  4 20:34:55 root: 2. Requesting SSL certificate
+<13>Dec  4 20:34:55 root: ==============================
+<13>Dec  4 20:34:55 root: ===============================
+<13>Dec  4 20:34:55 root: 3. Updating configuration files
+<13>Dec  4 20:34:55 root: ===============================
+<13>Dec  4 20:34:55 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 20:34:56 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 20:36:22 root: =====================================
+<13>Dec  4 20:36:22 root: NEW INSTALLER SESSION
+<13>Dec  4 20:36:22 root: Distribution: Ubuntu
+<13>Dec  4 20:36:22 root: Version: 16.04
+<13>Dec  4 20:36:22 root: Kernel: 64 Bit
+<13>Dec  4 20:36:22 root: Home directory: /home/rajdeeprath
+<13>Dec  4 20:36:22 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 20:36:22 root: Install directory: /usr/local/red5pro
+<13>Dec  4 20:36:22 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 20:36:22 root: OS TYPE DEBIAN
+<13>Dec  4 20:36:24 root: Advance mode selected
+<13>Dec  4 20:36:24 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 20:36:26 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 20:36:26 root: ====================================
+<13>Dec  4 20:36:26 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 20:36:26 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 20:36:29 root: ==============================
+<13>Dec  4 20:36:29 root: 2. Requesting SSL certificate
+<13>Dec  4 20:36:29 root: ==============================
+<13>Dec  4 20:36:29 root: ===============================
+<13>Dec  4 20:36:29 root: 3. Updating configuration files
+<13>Dec  4 20:36:29 root: ===============================
+<13>Dec  4 20:36:29 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 20:36:30 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 20:40:47 root: =====================================
+<13>Dec  4 20:40:47 root: NEW INSTALLER SESSION
+<13>Dec  4 20:40:47 root: Distribution: Ubuntu
+<13>Dec  4 20:40:47 root: Version: 16.04
+<13>Dec  4 20:40:47 root: Kernel: 64 Bit
+<13>Dec  4 20:40:47 root: Home directory: /home/rajdeeprath
+<13>Dec  4 20:40:47 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 20:40:47 root: Install directory: /usr/local/red5pro
+<13>Dec  4 20:40:47 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 20:40:47 root: OS TYPE DEBIAN
+<13>Dec  4 20:40:49 root: Advance mode selected
+<13>Dec  4 20:40:49 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 20:40:51 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 20:40:51 root: ====================================
+<13>Dec  4 20:40:51 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 20:40:51 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 20:40:54 root: ==============================
+<13>Dec  4 20:40:54 root: 2. Requesting SSL certificate
+<13>Dec  4 20:40:54 root: ==============================
+<13>Dec  4 20:40:54 root: ===============================
+<13>Dec  4 20:40:54 root: 3. Updating configuration files
+<13>Dec  4 20:40:54 root: ===============================
+<13>Dec  4 20:40:54 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 20:40:55 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 20:45:43 root: =====================================
+<13>Dec  4 20:45:43 root: NEW INSTALLER SESSION
+<13>Dec  4 20:45:43 root: Distribution: Ubuntu
+<13>Dec  4 20:45:43 root: Version: 16.04
+<13>Dec  4 20:45:43 root: Kernel: 64 Bit
+<13>Dec  4 20:45:43 root: Home directory: /home/rajdeeprath
+<13>Dec  4 20:45:43 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 20:45:43 root: Install directory: /usr/local/red5pro
+<13>Dec  4 20:45:43 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 20:45:43 root: OS TYPE DEBIAN
+<13>Dec  4 20:45:45 root: Advance mode selected
+<13>Dec  4 20:45:45 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 20:45:47 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 20:45:47 root: ====================================
+<13>Dec  4 20:45:47 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 20:45:47 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 20:45:50 root: ==============================
+<13>Dec  4 20:45:50 root: 2. Requesting SSL certificate
+<13>Dec  4 20:45:50 root: ==============================
+<13>Dec  4 20:45:50 root: ===============================
+<13>Dec  4 20:45:50 root: 3. Updating configuration files
+<13>Dec  4 20:45:50 root: ===============================
+<13>Dec  4 20:45:50 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 20:45:51 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 20:46:12 root: =====================================
+<13>Dec  4 20:46:12 root: NEW INSTALLER SESSION
+<13>Dec  4 20:46:12 root: Distribution: Ubuntu
+<13>Dec  4 20:46:12 root: Version: 16.04
+<13>Dec  4 20:46:12 root: Kernel: 64 Bit
+<13>Dec  4 20:46:12 root: Home directory: /home/rajdeeprath
+<13>Dec  4 20:46:12 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 20:46:12 root: Install directory: /usr/local/red5pro
+<13>Dec  4 20:46:12 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 20:46:12 root: OS TYPE DEBIAN
+<13>Dec  4 20:46:13 root: Advance mode selected
+<13>Dec  4 20:46:13 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 20:46:15 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 20:46:15 root: ====================================
+<13>Dec  4 20:46:15 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 20:46:15 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 20:46:18 root: ==============================
+<13>Dec  4 20:46:18 root: 2. Requesting SSL certificate
+<13>Dec  4 20:46:18 root: ==============================
+<13>Dec  4 20:46:18 root: ===============================
+<13>Dec  4 20:46:18 root: 3. Updating configuration files
+<13>Dec  4 20:46:18 root: ===============================
+<13>Dec  4 20:46:18 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 20:46:19 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 20:51:27 root: =====================================
+<13>Dec  4 20:51:27 root: NEW INSTALLER SESSION
+<13>Dec  4 20:51:27 root: Distribution: Ubuntu
+<13>Dec  4 20:51:27 root: Version: 16.04
+<13>Dec  4 20:51:27 root: Kernel: 64 Bit
+<13>Dec  4 20:51:27 root: Home directory: /home/rajdeeprath
+<13>Dec  4 20:51:27 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 20:51:27 root: Install directory: /usr/local/red5pro
+<13>Dec  4 20:51:27 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 20:51:27 root: OS TYPE DEBIAN
+<13>Dec  4 20:51:29 root: Advance mode selected
+<13>Dec  4 20:51:30 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 20:51:32 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 20:51:32 root: ====================================
+<13>Dec  4 20:51:32 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 20:51:32 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 20:51:35 root: ==============================
+<13>Dec  4 20:51:35 root: 2. Requesting SSL certificate
+<13>Dec  4 20:51:35 root: ==============================
+<13>Dec  4 20:51:35 root: ===============================
+<13>Dec  4 20:51:35 root: 3. Updating configuration files
+<13>Dec  4 20:51:35 root: ===============================
+<13>Dec  4 20:51:35 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 20:51:36 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 20:58:02 root: =====================================
+<13>Dec  4 20:58:02 root: NEW INSTALLER SESSION
+<13>Dec  4 20:58:02 root: Distribution: Ubuntu
+<13>Dec  4 20:58:02 root: Version: 16.04
+<13>Dec  4 20:58:02 root: Kernel: 64 Bit
+<13>Dec  4 20:58:02 root: Home directory: /home/rajdeeprath
+<13>Dec  4 20:58:02 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 20:58:02 root: Install directory: /usr/local/red5pro
+<13>Dec  4 20:58:02 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 20:58:02 root: OS TYPE DEBIAN
+<13>Dec  4 20:58:04 root: Advance mode selected
+<13>Dec  4 20:58:04 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 20:58:06 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 20:58:06 root: ====================================
+<13>Dec  4 20:58:06 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 20:58:06 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 20:58:09 root: ==============================
+<13>Dec  4 20:58:09 root: 2. Requesting SSL certificate
+<13>Dec  4 20:58:09 root: ==============================
+<13>Dec  4 20:58:09 root: ===============================
+<13>Dec  4 20:58:09 root: 3. Updating configuration files
+<13>Dec  4 20:58:09 root: ===============================
+<13>Dec  4 20:58:09 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 20:58:10 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 20:59:00 root: =====================================
+<13>Dec  4 20:59:00 root: NEW INSTALLER SESSION
+<13>Dec  4 20:59:00 root: Distribution: Ubuntu
+<13>Dec  4 20:59:00 root: Version: 16.04
+<13>Dec  4 20:59:00 root: Kernel: 64 Bit
+<13>Dec  4 20:59:00 root: Home directory: /home/rajdeeprath
+<13>Dec  4 20:59:00 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 20:59:00 root: Install directory: /usr/local/red5pro
+<13>Dec  4 20:59:00 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 20:59:00 root: OS TYPE DEBIAN
+<13>Dec  4 20:59:02 root: Advance mode selected
+<13>Dec  4 20:59:03 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 20:59:05 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 20:59:05 root: ====================================
+<13>Dec  4 20:59:05 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 20:59:05 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 20:59:08 root: ==============================
+<13>Dec  4 20:59:08 root: 2. Requesting SSL certificate
+<13>Dec  4 20:59:08 root: ==============================
+<13>Dec  4 20:59:08 root: ===============================
+<13>Dec  4 20:59:08 root: 3. Updating configuration files
+<13>Dec  4 20:59:08 root: ===============================
+<13>Dec  4 20:59:08 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 20:59:09 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 21:01:04 root: =====================================
+<13>Dec  4 21:01:04 root: NEW INSTALLER SESSION
+<13>Dec  4 21:01:04 root: Distribution: Ubuntu
+<13>Dec  4 21:01:04 root: Version: 16.04
+<13>Dec  4 21:01:04 root: Kernel: 64 Bit
+<13>Dec  4 21:01:04 root: Home directory: /home/rajdeeprath
+<13>Dec  4 21:01:04 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 21:01:04 root: Install directory: /usr/local/red5pro
+<13>Dec  4 21:01:04 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 21:01:05 root: OS TYPE DEBIAN
+<13>Dec  4 21:01:06 root: Advance mode selected
+<13>Dec  4 21:01:06 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 21:01:08 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 21:01:08 root: ====================================
+<13>Dec  4 21:01:08 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 21:01:08 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 21:01:11 root: ==============================
+<13>Dec  4 21:01:11 root: 2. Requesting SSL certificate
+<13>Dec  4 21:01:11 root: ==============================
+<13>Dec  4 21:01:11 root: ===============================
+<13>Dec  4 21:01:11 root: 3. Updating configuration files
+<13>Dec  4 21:01:11 root: ===============================
+<13>Dec  4 21:01:11 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 21:01:13 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 21:03:21 root: =====================================
+<13>Dec  4 21:03:21 root: NEW INSTALLER SESSION
+<13>Dec  4 21:03:21 root: Distribution: Ubuntu
+<13>Dec  4 21:03:21 root: Version: 16.04
+<13>Dec  4 21:03:21 root: Kernel: 64 Bit
+<13>Dec  4 21:03:21 root: Home directory: /home/rajdeeprath
+<13>Dec  4 21:03:21 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 21:03:21 root: Install directory: /usr/local/red5pro
+<13>Dec  4 21:03:21 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 21:03:21 root: OS TYPE DEBIAN
+<13>Dec  4 21:03:30 root: =====================================
+<13>Dec  4 21:03:30 root: NEW INSTALLER SESSION
+<13>Dec  4 21:03:30 root: Distribution: Ubuntu
+<13>Dec  4 21:03:30 root: Version: 16.04
+<13>Dec  4 21:03:30 root: Kernel: 64 Bit
+<13>Dec  4 21:03:30 root: Home directory: /home/rajdeeprath
+<13>Dec  4 21:03:30 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 21:03:30 root: Install directory: /usr/local/red5pro
+<13>Dec  4 21:03:30 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 21:03:30 root: OS TYPE DEBIAN
+<13>Dec  4 21:03:31 root: Advance mode selected
+<13>Dec  4 21:03:32 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 21:03:34 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 21:03:34 root: ====================================
+<13>Dec  4 21:03:34 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 21:03:34 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 21:03:36 root: ==============================
+<13>Dec  4 21:03:36 root: 2. Requesting SSL certificate
+<13>Dec  4 21:03:36 root: ==============================
+<13>Dec  4 21:03:36 root: ===============================
+<13>Dec  4 21:03:36 root: 3. Updating configuration files
+<13>Dec  4 21:03:36 root: ===============================
+<13>Dec  4 21:03:36 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 21:03:37 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 21:04:01 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 21:04:03 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 21:04:03 root: ====================================
+<13>Dec  4 21:04:03 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 21:04:03 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 21:04:06 root: ==============================
+<13>Dec  4 21:04:06 root: 2. Requesting SSL certificate
+<13>Dec  4 21:04:06 root: ==============================
+<13>Dec  4 21:04:06 root: ===============================
+<13>Dec  4 21:04:06 root: 3. Updating configuration files
+<13>Dec  4 21:04:06 root: ===============================
+<13>Dec  4 21:04:06 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 21:04:07 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 21:06:18 root: =====================================
+<13>Dec  4 21:06:18 root: NEW INSTALLER SESSION
+<13>Dec  4 21:06:18 root: Distribution: Ubuntu
+<13>Dec  4 21:06:18 root: Version: 16.04
+<13>Dec  4 21:06:18 root: Kernel: 64 Bit
+<13>Dec  4 21:06:18 root: Home directory: /home/rajdeeprath
+<13>Dec  4 21:06:18 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 21:06:18 root: Install directory: /usr/local/red5pro
+<13>Dec  4 21:06:18 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 21:06:18 root: OS TYPE DEBIAN
+<13>Dec  4 21:06:20 root: Advance mode selected
+<13>Dec  4 21:06:20 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 21:06:22 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 21:06:22 root: ====================================
+<13>Dec  4 21:06:22 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 21:06:22 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 21:06:25 root: ==============================
+<13>Dec  4 21:06:25 root: 2. Requesting SSL certificate
+<13>Dec  4 21:06:25 root: ==============================
+<13>Dec  4 21:06:25 root: ===============================
+<13>Dec  4 21:06:25 root: 3. Updating configuration files
+<13>Dec  4 21:06:25 root: ===============================
+<13>Dec  4 21:06:25 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 21:06:26 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 21:07:25 root: =====================================
+<13>Dec  4 21:07:25 root: NEW INSTALLER SESSION
+<13>Dec  4 21:07:25 root: Distribution: Ubuntu
+<13>Dec  4 21:07:25 root: Version: 16.04
+<13>Dec  4 21:07:25 root: Kernel: 64 Bit
+<13>Dec  4 21:07:25 root: Home directory: /home/rajdeeprath
+<13>Dec  4 21:07:25 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 21:07:25 root: Install directory: /usr/local/red5pro
+<13>Dec  4 21:07:25 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 21:07:25 root: OS TYPE DEBIAN
+<13>Dec  4 21:07:26 root: Advance mode selected
+<13>Dec  4 21:07:26 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 21:07:28 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 21:07:28 root: ====================================
+<13>Dec  4 21:07:28 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 21:07:28 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 21:07:31 root: ==============================
+<13>Dec  4 21:07:31 root: 2. Requesting SSL certificate
+<13>Dec  4 21:07:31 root: ==============================
+<13>Dec  4 21:07:31 root: ===============================
+<13>Dec  4 21:07:31 root: 3. Updating configuration files
+<13>Dec  4 21:07:31 root: ===============================
+<13>Dec  4 21:07:31 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 21:07:32 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 21:10:22 root: =====================================
+<13>Dec  4 21:10:22 root: NEW INSTALLER SESSION
+<13>Dec  4 21:10:22 root: Distribution: Ubuntu
+<13>Dec  4 21:10:22 root: Version: 16.04
+<13>Dec  4 21:10:22 root: Kernel: 64 Bit
+<13>Dec  4 21:10:22 root: Home directory: /home/rajdeeprath
+<13>Dec  4 21:10:22 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 21:10:22 root: Install directory: /usr/local/red5pro
+<13>Dec  4 21:10:22 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 21:10:22 root: OS TYPE DEBIAN
+<13>Dec  4 21:10:22 root: Advance mode selected
+<13>Dec  4 21:10:23 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 21:10:25 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 21:10:25 root: ====================================
+<13>Dec  4 21:10:25 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 21:10:25 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 21:10:28 root: ==============================
+<13>Dec  4 21:10:28 root: 2. Requesting SSL certificate
+<13>Dec  4 21:10:28 root: ==============================
+<13>Dec  4 21:10:28 root: ===============================
+<13>Dec  4 21:10:28 root: 3. Updating configuration files
+<13>Dec  4 21:10:28 root: ===============================
+<13>Dec  4 21:10:28 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 21:10:29 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 21:11:15 root: =====================================
+<13>Dec  4 21:11:15 root: NEW INSTALLER SESSION
+<13>Dec  4 21:11:15 root: Distribution: Ubuntu
+<13>Dec  4 21:11:16 root: Version: 16.04
+<13>Dec  4 21:11:16 root: Kernel: 64 Bit
+<13>Dec  4 21:11:16 root: Home directory: /home/rajdeeprath
+<13>Dec  4 21:11:16 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 21:11:16 root: Install directory: /usr/local/red5pro
+<13>Dec  4 21:11:16 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 21:11:16 root: OS TYPE DEBIAN
+<13>Dec  4 21:11:17 root: Advance mode selected
+<13>Dec  4 21:11:17 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 21:11:19 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 21:11:19 root: ====================================
+<13>Dec  4 21:11:19 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 21:11:19 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 21:11:22 root: ==============================
+<13>Dec  4 21:11:22 root: 2. Requesting SSL certificate
+<13>Dec  4 21:11:22 root: ==============================
+<13>Dec  4 21:11:22 root: ===============================
+<13>Dec  4 21:11:22 root: 3. Updating configuration files
+<13>Dec  4 21:11:22 root: ===============================
+<13>Dec  4 21:11:22 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 21:11:23 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 21:11:47 root: =====================================
+<13>Dec  4 21:11:47 root: NEW INSTALLER SESSION
+<13>Dec  4 21:11:47 root: Distribution: Ubuntu
+<13>Dec  4 21:11:47 root: Version: 16.04
+<13>Dec  4 21:11:47 root: Kernel: 64 Bit
+<13>Dec  4 21:11:47 root: Home directory: /home/rajdeeprath
+<13>Dec  4 21:11:47 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 21:11:47 root: Install directory: /usr/local/red5pro
+<13>Dec  4 21:11:47 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 21:11:47 root: OS TYPE DEBIAN
+<13>Dec  4 21:11:49 root: Advance mode selected
+<13>Dec  4 21:11:50 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 21:11:52 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 21:11:52 root: ====================================
+<13>Dec  4 21:11:52 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 21:11:52 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 21:11:55 root: ==============================
+<13>Dec  4 21:11:55 root: 2. Requesting SSL certificate
+<13>Dec  4 21:11:55 root: ==============================
+<13>Dec  4 21:11:55 root: ===============================
+<13>Dec  4 21:11:55 root: 3. Updating configuration files
+<13>Dec  4 21:11:55 root: ===============================
+<13>Dec  4 21:11:55 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 21:11:56 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 21:14:06 root: =====================================
+<13>Dec  4 21:14:06 root: NEW INSTALLER SESSION
+<13>Dec  4 21:14:06 root: Distribution: Ubuntu
+<13>Dec  4 21:14:06 root: Version: 16.04
+<13>Dec  4 21:14:06 root: Kernel: 64 Bit
+<13>Dec  4 21:14:06 root: Home directory: /home/rajdeeprath
+<13>Dec  4 21:14:06 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 21:14:06 root: Install directory: /usr/local/red5pro
+<13>Dec  4 21:14:06 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 21:14:06 root: OS TYPE DEBIAN
+<13>Dec  4 21:14:07 root: Advance mode selected
+<13>Dec  4 21:14:08 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 21:14:10 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 21:14:10 root: ====================================
+<13>Dec  4 21:14:10 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 21:14:10 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 21:14:13 root: ==============================
+<13>Dec  4 21:14:13 root: 2. Requesting SSL certificate
+<13>Dec  4 21:14:13 root: ==============================
+<13>Dec  4 21:14:13 root: ===============================
+<13>Dec  4 21:14:13 root: 3. Updating configuration files
+<13>Dec  4 21:14:13 root: ===============================
+<13>Dec  4 21:14:13 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 21:14:14 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 21:15:05 root: =====================================
+<13>Dec  4 21:15:05 root: NEW INSTALLER SESSION
+<13>Dec  4 21:15:05 root: Distribution: Ubuntu
+<13>Dec  4 21:15:05 root: Version: 16.04
+<13>Dec  4 21:15:05 root: Kernel: 64 Bit
+<13>Dec  4 21:15:05 root: Home directory: /home/rajdeeprath
+<13>Dec  4 21:15:05 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 21:15:05 root: Install directory: /usr/local/red5pro
+<13>Dec  4 21:15:05 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 21:15:05 root: OS TYPE DEBIAN
+<13>Dec  4 21:15:11 root: Advance mode selected
+<13>Dec  4 21:15:11 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 21:15:13 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 21:15:13 root: ====================================
+<13>Dec  4 21:15:13 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 21:15:13 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 21:15:16 root: ==============================
+<13>Dec  4 21:15:16 root: 2. Requesting SSL certificate
+<13>Dec  4 21:15:16 root: ==============================
+<13>Dec  4 21:15:16 root: ===============================
+<13>Dec  4 21:15:16 root: 3. Updating configuration files
+<13>Dec  4 21:15:16 root: ===============================
+<13>Dec  4 21:15:16 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 21:15:17 root: Configuring /usr/local/red5pro/conf/red5.properties..
+<13>Dec  4 21:15:32 root: =====================================
+<13>Dec  4 21:15:32 root: NEW INSTALLER SESSION
+<13>Dec  4 21:15:32 root: Distribution: Ubuntu
+<13>Dec  4 21:15:32 root: Version: 16.04
+<13>Dec  4 21:15:32 root: Kernel: 64 Bit
+<13>Dec  4 21:15:32 root: Home directory: /home/rajdeeprath
+<13>Dec  4 21:15:32 root: BackUp directory: /home/rajdeeprath/red5pro_backups
+<13>Dec  4 21:15:32 root: Install directory: /usr/local/red5pro
+<13>Dec  4 21:15:32 root: Downloads directory: /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/tmp
+<13>Dec  4 21:15:32 root: OS TYPE DEBIAN
+<13>Dec  4 21:15:33 root: Advance mode selected
+<13>Dec  4 21:15:33 root: Starting Letsencrypt SSL Installer
+<13>Dec  4 21:15:35 root: Letsencrypt found at /home/rajdeeprath/red5pro-automation-scripts/installer/Linux/letsencrypt
+<13>Dec  4 21:15:35 root: ====================================
+<13>Dec  4 21:15:35 root: 1. Preparing letsencrypt as needed
+<13>Dec  4 21:15:35 root: ====================================
+
+-------------------------------------------------------------------------------
+
+  letsencrypt-auto [SUBCOMMAND] [options] [-d DOMAIN] [-d DOMAIN] ...
+
+Certbot can obtain and install HTTPS/TLS/SSL certificates.  By default,
+it will attempt to use a webserver both for obtaining and installing the
+certificate. The most common SUBCOMMANDS and flags are:
+
+obtain, install, and renew certificates:
+    (default) run   Obtain & install a certificate in your current webserver
+    certonly        Obtain or renew a certificate, but do not install it
+    renew           Renew all previously obtained certificates that are near
+expiry
+   -d DOMAINS       Comma-separated list of domains to obtain a certificate for
+
+  --apache          Use the Apache plugin for authentication & installation
+  --standalone      Run a standalone webserver for authentication
+  --nginx           Use the Nginx plugin for authentication & installation
+  --webroot         Place files in a server's webroot folder for authentication
+  --manual          Obtain certificates interactively, or using shell script
+hooks
+
+   -n               Run non-interactively
+  --test-cert       Obtain a test certificate from a staging server
+  --dry-run         Test "renew" or "certonly" without saving any certificates
+to disk
+
+manage certificates:
+    certificates    Display information about certificates you have from Certbot
+    revoke          Revoke a certificate (supply --cert-path)
+    delete          Delete a certificate
+
+manage your account with Let's Encrypt:
+    register        Create a Let's Encrypt ACME account
+  --agree-tos       Agree to the ACME server's Subscriber Agreement
+   -m EMAIL         Email address for important account notifications
+
+More detailed help:
+
+  -h, --help [TOPIC]    print this message, or detailed help on a topic;
+                        the available TOPICS are:
+
+   all, automation, commands, paths, security, testing, or any of the
+   subcommands or plugins (certonly, renew, install, register, nginx,
+   apache, standalone, webroot, etc.)
+-------------------------------------------------------------------------------
+<13>Dec  4 21:15:38 root: ==============================
+<13>Dec  4 21:15:38 root: 2. Requesting SSL certificate
+<13>Dec  4 21:15:38 root: ==============================
+<13>Dec  4 21:15:38 root: ===============================
+<13>Dec  4 21:15:38 root: 3. Updating configuration files
+<13>Dec  4 21:15:38 root: ===============================
+<13>Dec  4 21:15:38 root: Configuring /usr/local/red5pro/conf/jee-container.xml..
+<13>Dec  4 21:15:39 root: Configuring /usr/local/red5pro/conf/red5.properties..
