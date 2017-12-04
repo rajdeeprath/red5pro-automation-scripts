@@ -721,9 +721,9 @@ rpro_ssl_installer()
 	
 	# if all ok -> Prepare RTMPS Key and Trust store parameters
 	# RTMPS Key and Trust store parameters
-	rpro_ssl_trust_store_rtmps_keystorepass="rtmps.keystorepass=cert.password"
+	rpro_ssl_trust_store_rtmps_keystorepass="rtmps.keystorepass=$rpro_keystore_cert_pass"
 	rpro_ssl_trust_store_rtmps_keystorefile="rtmps.keystorefile=$rpro_ssl_keystore_jks"
-	rpro_ssl_trust_store_rtmps_truststorepass="rtmps.truststorepass=cert.password"
+	rpro_ssl_trust_store_rtmps_truststorepass="rtmps.truststorepass=$rpro_keystore_cert_pass"
 	rpro_ssl_trust_store_rtmps_truststorefie="rtmps.truststorefile=$rpro_ssl_trust_store"
 
 
@@ -826,16 +826,16 @@ smart_config_ssl_properties()
 	# RTMPS
 
 	rtmps_keystorepass_pattern="rtmps.keystorepass=.*"
-	rtmps_keystorepass_replacement_value="rtmps.keystorepass=$rpro_ssl_trust_store_rtmps_keystorepass"
+	rtmps_keystorepass_replacement_value="$rpro_ssl_trust_store_rtmps_keystorepass"
 
 	rtmps_keystorefile_pattern="rtmps.keystorefile=.*"
-	rtmps_keystorefile_replacement_value="rtmps.keystorefile=$rpro_ssl_trust_store_rtmps_keystorefile"
+	rtmps_keystorefile_replacement_value="$rpro_ssl_trust_store_rtmps_keystorefile"
 
 	rtmps_truststorepass_pattern="rtmps.truststorepass=.*"
-	rtmps_truststorepass_replacement_value="rtmps.truststorepass=$rpro_ssl_trust_store_rtmps_truststorepass"
+	rtmps_truststorepass_replacement_value="$rpro_ssl_trust_store_rtmps_truststorepass"
 
 	rtmps_truststorefile_pattern="rtmps.truststorefile=.*"
-	rtmps_truststorefile_replacement_value="rtmps.truststorefile=$rpro_ssl_trust_store_rtmps_truststorefie"
+	rtmps_truststorefile_replacement_value="$rpro_ssl_trust_store_rtmps_truststorefie"
 
 	# Websocket
 
