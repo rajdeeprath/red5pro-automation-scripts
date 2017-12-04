@@ -718,30 +718,21 @@ rpro_ssl_installer()
 	rpro_ssl_fullchain_and_key="/etc/letsencrypt/live/$rpro_ssl_reg_domain/fullchain_and_key.p12"
 	rpro_ssl_keystore_jks="/etc/letsencrypt/live/$rpro_ssl_reg_domain/keystore.jks"
 	rpro_ssl_tomcat_cer="/etc/letsencrypt/live/$rpro_ssl_reg_domain/tomcat.cer"
-	rpro_ssl_trust_store="etc/letsencrypt/live/$rpro_ssl_reg_domain/truststore.jks"
+	rpro_ssl_trust_store="/etc/letsencrypt/live/$rpro_ssl_reg_domain/truststore.jks"
 	
 
 	# Ask for keystore password here -> input
 	rpro_keystore_cert_pass="xyz123"
 
-	lecho "1"
-	sleep 2
 
 	openssl pkcs12 -export -in "$rpro_ssl_fullchain" -inkey "$rpro_ssl_privkey" -out "$rpro_ssl_fullchain_and_key" -password pass:"$rpro_keystore_cert_pass" -name tomcat
 
-	lecho "2"
-	sleep 2
 
 	keytool -importkeystore -deststorepass "$rpro_keystore_cert_pass" -destkeypass "$rpro_keystore_cert_pass" -destkeystore "$rpro_ssl_keystore_jks" -srckeystore "$rpro_ssl_fullchain_and_key" -srcstoretype PKCS12 -srcstorepass "$rpro_keystore_cert_pass" -alias tomcat
 
-	lecho "3"
-	sleep 2
 
 	keytool -export -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_keystore_jks" -storepass "$rpro_keystore_cert_pass" -noprompt
 
-
-	lecho "4"
-	sleep 2
 
 	keytool -import -trustcacerts -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_trust_store" -storepass "$rpro_keystore_cert_pass" -noprompt
 
@@ -2808,9 +2799,8 @@ advance_menu()
 	echo "2. WHICH JAVA AM I USING ?"
 	echo "3. INSTALL RED5 PRO SERVICE"
 	echo "4. UNINSTALL RED5 PRO SERVICE"
-	echo "5. SSL INSTALLER"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "6. BACK TO MODE SELECTION"
+	echo "5. BACK TO MODE SELECTION"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "0. Exit"
 	echo "                             "
@@ -2831,8 +2821,7 @@ advance_menu_read_options(){
 		2) check_java 1 ;;
 		3) register_rpro_as_service ;;
 		4) unregister_rpro_as_service ;;
-		5) rpro_ssl_installer ;;
-		6) main ;;
+		5) main ;;
 		0) exit 0;;
 		*) echo -e "${RED}Error...${STD}" && sleep 2 && exit 0
 	esac
@@ -2870,20 +2859,21 @@ simple_menu()
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"	
 	echo " RED5 PRO INSTALLER - BASIC MODE         	"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "1. INSTALL LATEST RED5 PRO"
-	echo "2. INSTALL RED5 PRO FROM URL"
-	echo "3. REMOVE RED5 PRO INSTALLATION"
-	echo "4. ADD / UPDATE RED5 PRO LICENSE"
+	echo "1. --- INSTALL LATEST RED5 PRO		"
+	echo "2. --- INSTALL RED5 PRO FROM URL		"
+	echo "3. --- REMOVE RED5 PRO INSTALLATION	"
+	echo "4. --- ADD / UPDATE RED5 PRO LICENSE	"
+	echo "5. ----SSL CERT INSTALLER 		"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "------ RED5 PRO SERVICE OPTIONS -----------"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "5. --- START RED5 PRO"
-	echo "6. --- STOP RED5 PRO"
-	echo "7. --- RESTART RED5 PRO"
+	echo "6. --- START RED5 PRO			"
+	echo "7. --- STOP RED5 PRO			"
+	echo "8. --- RESTART RED5 PRO			"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "8. BACK TO MODE SELECTION"
+	echo "9. --- BACK TO MODE SELECTION"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "0. Exit"
+	echo "0. --- Exit"
 	echo "                             "
 
 }
@@ -2906,10 +2896,11 @@ simple_menu_read_options(){
 		2) auto_install_rpro_url ;;
 		3) remove_rpro_installation ;;
 		4) show_licence_menu ;;
-		5) start_red5pro_service ;;
-		6) stop_red5pro_service ;;
-		7) restart_red5pro_service ;;
-		8) main ;;
+		5) rpro_ssl_installer ;;
+		6) start_red5pro_service ;;
+		7) stop_red5pro_service ;;
+		8) restart_red5pro_service ;;
+		9) main ;;
 		0) exit 0;;
 		*) echo -e "${RED}Error...${STD}" && sleep 2 && exit 0
 	esac
