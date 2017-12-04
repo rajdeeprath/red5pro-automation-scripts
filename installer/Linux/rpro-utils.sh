@@ -662,6 +662,37 @@ rpro_ssl_installer()
 
 	rpro_ssl_reg_domain="testdomain.com"
 	rpro_ssl_reg_email="rajdeeprath@gmail.com"
+
+
+	lecho "==============================" 
+	lecho "2. Requesting SSL certificate" 
+	lecho "==============================" 
+
+	#letsencrypt_cert_gen_success=0
+	#rpro_ssl_response=$(./letsencrypt-auto certonly --standalone --email "$rpro_ssl_reg_email" --agree-tos -d "$rpro_ssl_reg_domain" 2>&1 | tee /dev/tty)
+
+	#lecho "$rpro_ssl_response" | grep 'Congratulations! Your certificate and chain have been saved' &> /dev/null
+	#if [ $? == 0 ]; then
+	#   	lecho "Cert successfully generated!"
+	#else
+	#	lecho "SSL cert generation failed!"
+	#	read -r -p " -- Retry? [y/N] " try_login_response
+	#	case $try_login_response in
+	#	[yY][eE][sS]|[yY]) 
+	#	rpro_ssl_installer
+	#	;;
+	#	*)
+	#	letsencrypt_cert_gen_success=0
+	#	;;
+	#	esac	
+	#fi
+
+
+	# Recheck & exit
+	#if [[ $letsencrypt_cert_gen_success -eq 0 ]]; then
+	#	lecho "SSL Certificate generation did not succeed. Please rectify any errors mentioned in the logging and try again!"
+	#	pause
+	#fi
 	
 
 	
