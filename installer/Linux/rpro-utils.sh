@@ -54,8 +54,10 @@ RED5PRO_SSL_LETSENCRYPT_FOLDER_NAME="letsencrypt"
 RED5PRO_SSL_LETSENCRYPT_GIT="https://github.com/letsencrypt/letsencrypt"
 RED5PRO_SSL_LETSENCRYPT_FOLDER=
 RED5PRO_SSL_LETSENCRYPT_EXECUTABLE="letsencrypt-auto"
-RED5PRO_SSL_LETSENCRYPT_LOG_FILENAME="letsencrypt.log"
-RED5PRO_SSL_LETSENCRYPT_LOG_FILE=
+RED5PRO_SSL_DEFAULT_HTTP_PORT=80
+RED5PRO_SSL_DEFAULT_HTTPS_PORT=443
+RED5PRO_SSL_DEFAULT_WS_PORT=8081
+RED5PRO_SSL_DEFAULT_WSS_PORT=8083
 
 
 RED5PRO_DOWNLOAD_URL=
@@ -646,6 +648,11 @@ rpro_ssl_installer()
 		fi
 	fi
 
+	
+
+	# Stopping Red5 Pro if running [ VERY iMPORTANT! ]
+	stop_red5pro_service 1
+
 
 	# Initializing letsencrypt => Need better way to know if this is first time setup or already setup
 
@@ -660,7 +667,7 @@ rpro_ssl_installer()
 	
 	# Get Certificate
 
-	rpro_ssl_reg_domain="testdomain.com"
+	rpro_ssl_reg_domain="ssltester.flashvisions.com"
 	rpro_ssl_reg_email="rajdeeprath@gmail.com"
 
 
@@ -668,31 +675,39 @@ rpro_ssl_installer()
 	lecho "2. Requesting SSL certificate" 
 	lecho "==============================" 
 
-	#letsencrypt_cert_gen_success=0
-	#rpro_ssl_response=$(./letsencrypt-auto certonly --standalone --email "$rpro_ssl_reg_email" --agree-tos -d "$rpro_ssl_reg_domain" 2>&1 | tee /dev/tty)
 
-	#lecho "$rpro_ssl_response" | grep 'Congratulations! Your certificate and chain have been saved' &> /dev/null
-	#if [ $? == 0 ]; then
-	#   	lecho "Cert successfully generated!"
-	#else
-	#	lecho "SSL cert generation failed!"
-	#	read -r -p " -- Retry? [y/N] " try_login_response
-	#	case $try_login_response in
-	#	[yY][eE][sS]|[yY]) 
-	#	rpro_ssl_installer
-	#	;;
-	#	*)
-	#	letsencrypt_cert_gen_success=0
-	#	;;
-	#	esac	
-	#fi
+	letsencrypt_cert_gen_success=0
+	rpro_ssl_response=$(./letsencrypt-auto certonly --standalone --email "$rpro_ssl_reg_email" --agree-tos -d "$rpro_ssl_reg_domain" 2>&1 | tee /dev/tty)
+
+	lecho "$rpro_ssl_response" | grep 'Congratulations! Your certificate and chain have been saved' &> /dev/null
+	if [ $? == 0 ]; then
+	   	lecho "Cert successfully generated!"
+		letsencrypt_cert_gen_success=1
+	else
+		lecho "$rpro_ssl_response" | grep 'You have an existing certificate that has exactly the same domains' &> /dev/null
+
+		if [ $? == 0 ]; then
+			letsencrypt_cert_gen_success=1
+		else			
+			lecho "SSL cert generation failed!"
+			read -r -p " -- Retry? [y/N] " try_login_response
+			case $try_login_response in
+			[yY][eE][sS]|[yY]) 
+			rpro_ssl_installer
+			;;
+			*)
+			letsencrypt_cert_gen_success=0
+			;;
+			esac
+		fi	
+	fi
 
 
 	# Recheck & exit
-	#if [[ $letsencrypt_cert_gen_success -eq 0 ]]; then
-	#	lecho "SSL Certificate generation did not succeed. Please rectify any errors mentioned in the logging and try again!"
-	#	pause
-	#fi
+	if [[ $letsencrypt_cert_gen_success -eq 0 ]]; then
+		lecho "SSL Certificate generation did not succeed. Please rectify any errors mentioned in the logging and try again!"
+		pause
+	fi
 	
 
 	
@@ -709,14 +724,26 @@ rpro_ssl_installer()
 	# Ask for keystore password here -> input
 	rpro_keystore_cert_pass="xyz123"
 
+	lecho "1"
+	sleep 2
 
-	#openssl pkcs12 -export -in "$rpro_ssl_fullchain" -inkey "$rpro_ssl_privkey" -out "$rpro_ssl_fullchain_and_key" -name tomcat
+	openssl pkcs12 -export -in "$rpro_ssl_fullchain" -inkey "$rpro_ssl_privkey" -out "$rpro_ssl_fullchain_and_key" -password pass:"$rpro_keystore_cert_pass" -name tomcat
 
-	#keytool -importkeystore -deststorepass "$rpro_keystore_cert_pass" -destkeypass "$rpro_keystore_cert_pass" -destkeystore "$rpro_ssl_keystore_jks" -srckeystore "$rpro_ssl_fullchain_and_key" -srcstoretype PKCS12 -srcstorepass "$rpro_keystore_cert_pass" -alias tomcat
+	lecho "2"
+	sleep 2
 
-	#keytool -export -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_keystore_jks" -storepass "$rpro_keystore_cert_pass" -noprompt
+	keytool -importkeystore -deststorepass "$rpro_keystore_cert_pass" -destkeypass "$rpro_keystore_cert_pass" -destkeystore "$rpro_ssl_keystore_jks" -srckeystore "$rpro_ssl_fullchain_and_key" -srcstoretype PKCS12 -srcstorepass "$rpro_keystore_cert_pass" -alias tomcat
 
-	#keytool -import -trustcacerts -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_trust_store" -storepass "$rpro_keystore_cert_pass" -noprompt
+	lecho "3"
+	sleep 2
+
+	keytool -export -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_keystore_jks" -storepass "$rpro_keystore_cert_pass" -noprompt
+
+
+	lecho "4"
+	sleep 2
+
+	keytool -import -trustcacerts -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_trust_store" -storepass "$rpro_keystore_cert_pass" -noprompt
 
 	
 	# if all ok -> Prepare RTMPS Key and Trust store parameters
@@ -726,16 +753,13 @@ rpro_ssl_installer()
 	rpro_ssl_trust_store_rtmps_truststorepass="rtmps.truststorepass=$rpro_keystore_cert_pass"
 	rpro_ssl_trust_store_rtmps_truststorefie="rtmps.truststorefile=$rpro_ssl_trust_store"
 
-
 	
 	lecho "===============================" 
 	lecho "3. Updating configuration files" 
 	lecho "==============================="
-
 	
 
 	## Substitute appropriate files to enable ssl
-
 
 	# Locating files to replace
 
@@ -747,6 +771,7 @@ rpro_ssl_installer()
 
 	config_ssl_jeecontainer
 
+	#simple_config_ssl_properties
 	smart_config_ssl_properties
 
 
@@ -818,9 +843,9 @@ smart_config_ssl_properties()
 	# HTTP &  HTTPS
 
 	http_port_pattern="http.port=.*"
-	http_port_replacement_value="http.port=80"
+	http_port_replacement_value="http.port=$RED5PRO_SSL_DEFAULT_HTTP_PORT"
 	https_port_pattern="https.port=.*"
-	https_port_replacement_value="https.port=443"
+	https_port_replacement_value="https.port=$RED5PRO_SSL_DEFAULT_HTTPS_PORT"
 
 
 	# RTMPS
@@ -843,13 +868,13 @@ smart_config_ssl_properties()
 	ws_host_replacement_value="ws.host=0.0.0.0"
 
 	ws_port_pattern="ws.port=.*" 
-	ws_port_replacement_value="ws.port=8081"
+	ws_port_replacement_value="ws.port=$RED5PRO_SSL_DEFAULT_WS_PORT"
 
 	wss_host_pattern="wss.host=.*" 
 	wss_host_replacement_value="wss.host=0.0.0.0"
 
 	wss_port_pattern="wss.port=.*" 
-	wss_port_replacement_value="wss.port=8083"
+	wss_port_replacement_value="wss.port=$RED5PRO_SSL_DEFAULT_WSS_PORT"
 
 	ws_config_pattern="ws.port=.*"
 	ws_config_replacement_value="$ws_port_replacement_value\n$wss_host_replacement_value\n$wss_port_replacement_value"
@@ -877,13 +902,10 @@ smart_config_ssl_properties()
 
 	# Second pass - wss config check & smart replacements
 	if [[ $has_wss_conf -eq 1 ]]; then
-		sed -e "s|$wss_host_pattern|$wss_host_replacement_value|" -e "s|$wss_port_pattern|$wss_port_replacement_value|" "$red5pro_conf_properties"
+		sed -i -e "s|$wss_host_pattern|$wss_host_replacement_value|" -e "s|$wss_port_pattern|$wss_port_replacement_value|" "$red5pro_conf_properties"
 	else
-		sed -e "s|$ws_config_pattern|$ws_config_replacement_value|" "$red5pro_conf_properties"
+		sed -i -e "s|$ws_config_pattern|$ws_config_replacement_value|" "$red5pro_conf_properties"
 	fi
-
-
-	pause
 }
 
 
