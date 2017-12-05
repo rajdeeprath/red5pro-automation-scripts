@@ -685,6 +685,11 @@ letsencrypt_download()
 
 rpro_ssl_installer()
 {
+	cls
+
+	rpro_ssl_installation_success=0
+
+
 	lecho "Starting Letsencrypt SSL Installer"
 	sleep 2
 
@@ -796,13 +801,43 @@ rpro_ssl_installer()
 	openssl pkcs12 -export -in "$rpro_ssl_fullchain" -inkey "$rpro_ssl_privkey" -out "$rpro_ssl_fullchain_and_key" -password pass:"$rpro_keystore_cert_pass" -name tomcat
 
 
-	keytool -importkeystore -deststorepass "$rpro_keystore_cert_pass" -destkeypass "$rpro_keystore_cert_pass" -destkeystore "$rpro_ssl_keystore_jks" -srckeystore "$rpro_ssl_fullchain_and_key" -srcstoretype PKCS12 -srcstorepass "$rpro_keystore_cert_pass" -alias tomcat
+	keytool_response=$(keytool -importkeystore -deststorepass "$rpro_keystore_cert_pass" -destkeypass "$rpro_keystore_cert_pass" -destkeystore "$rpro_ssl_keystore_jks" -srckeystore "$rpro_ssl_fullchain_and_key" -srcstoretype PKCS12 -srcstorepass "$rpro_keystore_cert_pass" -alias tomcat)
+
+	# Check for keytool error
+	if [[ ${keytool_response} == *"keytool error"* ]];then
+	    lecho "==========================================================================================================."
+	    lecho "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
+	    lecho "Error Details:"
+	    lecho "$keytool_response"
+	    pause
+	fi
 
 
-	keytool -export -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_keystore_jks" -storepass "$rpro_keystore_cert_pass" -noprompt
+	keytool_response=$(keytool -export -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_keystore_jks" -storepass "$rpro_keystore_cert_pass" -noprompt)
 
 
-	keytool -import -trustcacerts -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_trust_store" -storepass "$rpro_keystore_cert_pass" -noprompt
+	# Check for keytool error
+	if [[ ${keytool_response} == *"keytool error"* ]];then
+	    lecho "==========================================================================================================."
+	    lecho "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
+	    lecho "Error Details:"
+	    lecho "$keytool_response"
+	    pause
+	fi
+
+
+	keytool_response=$(keytool -import -trustcacerts -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_trust_store" -storepass "$rpro_keystore_cert_pass" -noprompt)
+
+
+	# Check for keytool error
+	if [[ ${keytool_response} == *"keytool error"* ]];then
+	    lecho "==========================================================================================================."
+	    lecho "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
+	    lecho "Error Details:"
+	    lecho "$keytool_response"
+	    pause
+	fi
+	
 
 	
 	# if all ok -> Prepare RTMPS Key and Trust store parameters
@@ -833,6 +868,9 @@ rpro_ssl_installer()
 	#simple_config_ssl_properties
 	smart_config_ssl_properties
 
+	
+	rpro_ssl_installation_success=1
+
 
 	lecho "Red5 Pro SSL configuration conplete!. Please restart server for changes to take effect."
 	read -r -p "Restart server now ? [y/N] " rpro_restart_response
@@ -844,6 +882,12 @@ rpro_ssl_installer()
 	show_advance_menu
 	;;
 	esac
+
+
+	if [ $# -eq 0 ]
+	  then
+	    pause
+	fi
 	
 }
 
@@ -939,6 +983,7 @@ ssl_cert_passphrase_form()
 			rpro_ssl_cert_passphrase_length=size=${#rpro_ssl_cert_passphrase} 
 
 			if [[ "$rpro_ssl_cert_passphrase_length" -gt 4 ]]; then
+
 				rpro_ssl_cert_passphrase_valid=1
 			else
 				rpro_ssl_cert_passphrase_valid=0
