@@ -102,6 +102,25 @@ lecho()
 
 
 
+lecho_err()
+{
+	if [ $# -eq 0 ]; then
+		return
+	else
+	# Red in Yellow
+		echo -e "\e[41m $1\e[m"
+
+		if $LOGGING; then
+			logger -s $1 2>> $LOG_FILE
+		fi
+	fi
+}
+
+
+		
+
+
+
 
 clear_log()
 {
@@ -132,7 +151,7 @@ cls()
 refresh()
 {
 	if [ "$MODE" -eq  1 ]; then
- 	show_advance_menu
+ 	show_utility_menu
 	else
  	show_simple_menu
 	fi
@@ -148,7 +167,7 @@ pause()
 
 
 	if [ "$MODE" -eq  1 ]; then
- 	show_advance_menu
+ 	show_utility_menu
 	else
  	show_simple_menu
 	fi
@@ -356,19 +375,6 @@ install_java_deb()
 	lecho "Installing Java for Debian";
 	apt-get install -y default-jre
 
-	: '
-	if repo_has_required_java_deb; then
-		write_log "Installing java from repo -> default-jre"
-		apt-get update
-		apt-get install default-jre
-	else
-		write_log "Installing java from ppa custom repo -> oracle-java8-installer"		
-		add-apt-repository ppa:webupd8team/java
-		apt-get update
-
-		apt-get install oracle-java8-installer
-	fi
-	'
 }
 
 
@@ -377,59 +383,7 @@ install_java_deb()
 install_java_rhl()
 {
 	lecho "Installing Java for CentOs";
-	yum -y install java	
-
-	: '
-
-	if repo_has_required_java_rhl; then
-		write_log "Installing java from repo -> default-jre"
-		yum install java-1.8.0-openjdk
-	else
-
-		if [ $IS_64_BIT -eq 1 ]; then
-			java_url=$JAVA_64_BIT
-			java_installer=$JAVA_64_FILENAME
-		else
-			java_url=$JAVA_32_BIT
-			java_installer=$JAVA_32_FILENAME
-		fi
-
-		write_log "Installing java from rpm -> oracle-java8-installer -> $java_url"
-		cd ~
-
-
-		# Remove installer if exists
-		if [ -f $java_installer ]; then
-			rm ~/$java_installer
-		fi
-
-
-
-		if [[ $java_downloaded -eq 0 ]]; then
-
-			lecho "Downloading $java_url"
-
-			wget --header "Cookie: oraclelicense=accept-securebackup-cookie" $java_url
-
-			# if downloaded
-			if [ -f $java_installer ]; then
-				java_downloaded=1
-				lecho "Downloading successful"
-			else
-				lecho "Failed to download java installer package"
-			fi
-		fi
-
-
-
-		# install
-		if [[ $java_downloaded -eq 1 ]]; then
-			lecho "Installing package $java_installer"
-			yum localinstall $java_installer
-			rm ~/$java_installer
-		fi
-	fi
-	'
+	yum -y install java
 }
 
 
@@ -685,8 +639,6 @@ letsencrypt_download()
 
 rpro_ssl_installer()
 {
-	cls
-
 	rpro_ssl_installation_success=0
 
 
@@ -704,7 +656,7 @@ rpro_ssl_installer()
 		
 		# Recheck
 		if [[ $letsencrypt_download_success -eq 0 ]]; then
-			lecho "Failed to download letsencrypt from github"
+			lecho_err "Failed to download letsencrypt from github"
 			pause
 		fi
 	fi
@@ -718,7 +670,9 @@ rpro_ssl_installer()
 	
 
 	# Stopping Red5 Pro if running [ VERY iMPORTANT! ]
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	lecho "Red5 Pro will be stopped temporarily (If running), for the Letsencrypt SSL challenge to complete successfully!."
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	sleep 5
 	stop_red5pro_service 1
 
@@ -728,9 +682,9 @@ rpro_ssl_installer()
 
 	cd "$RED5PRO_SSL_LETSENCRYPT_FOLDER"	
 
-	lecho "==========================================="  
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	lecho " Preparing letsencrypt as needed" 
-	lecho "==========================================="
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 
 	sleep 2
  
@@ -742,9 +696,9 @@ rpro_ssl_installer()
 
 
 
-	lecho "==========================================="
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	lecho "Requesting SSL certificate" 
-	lecho "===========================================" 
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 
 	sleep 2
 
@@ -762,7 +716,7 @@ rpro_ssl_installer()
 		if [ $? == 0 ]; then
 			letsencrypt_cert_gen_success=1
 		else			
-			lecho "SSL cert generation failed!"
+			lecho_err "SSL cert generation failed!"
 			read -r -p " -- Retry? [y/N] " try_login_response
 			case $try_login_response in
 			[yY][eE][sS]|[yY]) 
@@ -805,10 +759,10 @@ rpro_ssl_installer()
 
 	# Check for keytool error
 	if [[ ${keytool_response} == *"keytool error"* ]];then
-	    lecho "==========================================================================================================."
-	    lecho "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
-	    lecho "Error Details:"
-	    lecho "$keytool_response"
+	    printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+	    lecho_err "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
+	    lecho_err "Error Details:"
+	    lecho_err "$keytool_response"
 	    pause
 	fi
 
@@ -818,10 +772,10 @@ rpro_ssl_installer()
 
 	# Check for keytool error
 	if [[ ${keytool_response} == *"keytool error"* ]];then
-	    lecho "==========================================================================================================."
-	    lecho "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
-	    lecho "Error Details:"
-	    lecho "$keytool_response"
+	    printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+	    lecho_err "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
+	    lecho_err "Error Details:"
+	    lecho_err "$keytool_response"
 	    pause
 	fi
 
@@ -831,10 +785,10 @@ rpro_ssl_installer()
 
 	# Check for keytool error
 	if [[ ${keytool_response} == *"keytool error"* ]];then
-	    lecho "==========================================================================================================."
-	    lecho "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
-	    lecho "Error Details:"
-	    lecho "$keytool_response"
+	    printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+	    lecho_err "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
+	    lecho_err "Error Details:"
+	    lecho_err "$keytool_response"
 	    pause
 	fi
 	
@@ -848,9 +802,9 @@ rpro_ssl_installer()
 	rpro_ssl_trust_store_rtmps_truststorefie="rtmps.truststorefile=$rpro_ssl_trust_store"
 
 	
-	lecho "==========================================="  
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	lecho "Updating configuration files" 
-	lecho "==========================================="
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	
 
 	## Substitute appropriate files to enable ssl
@@ -879,7 +833,7 @@ rpro_ssl_installer()
 	restart_red5pro_service
 	;;
 	*)
-	show_advance_menu
+	show_utility_menu
 	;;
 	esac
 
@@ -894,11 +848,10 @@ rpro_ssl_installer()
 
 ssl_cert_request_form()
 {
-	cls
 
-	lecho "==========================================="
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	lecho "-------- SSL CERTIFICATE REQUEST ----------" 
-	lecho "===========================================" 
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 
 
 	rpro_ssl_form_valid=1
@@ -936,7 +889,7 @@ ssl_cert_request_form()
 	# if all params not valid
 	if [ "$rpro_ssl_form_valid" -eq "0" ]; then
 	
-		lecho "One or more parameters are invalid. Please check and try again!"
+		lecho_err "One or more parameters are invalid. Please check and try again!"
 		read -r -p " -- Retry? [y/N] " try_login_response
 		case $try_login_response in
 		[yY][eE][sS]|[yY]) 
@@ -954,13 +907,10 @@ ssl_cert_request_form()
 
 ssl_cert_passphrase_form()
 {
-	#rpro_keystore_cert_pass="xyz123"
 
-	cls
-
-	lecho "==========================================="
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	lecho "------- SSL CERTIFICATE PASSWORD ----------" 
-	lecho "===========================================" 
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 
 	rpro_ssl_cert_passphrase_form_valid=0
 	rpro_ssl_cert_passphrase_form_error="Unknown error!"
@@ -1003,7 +953,7 @@ ssl_cert_passphrase_form()
 	# If all params not valid
 	if [ "$rpro_ssl_cert_passphrase_valid" -eq "0" ]; then
 	
-		lecho "There seems to be a problem with the cert password.Cause:$rpro_ssl_cert_passphrase_form_error.Please check and try again!"
+		lecho_err "There seems to be a problem with the cert password.Cause:$rpro_ssl_cert_passphrase_form_error.Please check and try again!"
 		read -r -p " -- Retry? [y/N] " try_login_response
 		case $try_login_response in
 		[yY][eE][sS]|[yY]) 
@@ -1026,12 +976,12 @@ config_ssl_jeecontainer()
 	sleep 1
 
 	if [ ! -f "$red5pro_conf_jee_container" ]; then
-	    lecho "Error : File  $red5pro_conf_jee_container not found!"
+	    lecho_err "Error : File  $red5pro_conf_jee_container not found!"
 	    pause
 	fi
 	
 	if [ ! -f "$red5pro_installer_conf_jee_container" ]; then
-	    lecho "Error : File  $red5pro_installer_conf_jee_container not found!"
+	    lecho_err "Error : File  $red5pro_installer_conf_jee_container not found!"
 	    pause
 	fi
 
@@ -1047,13 +997,13 @@ simple_config_ssl_properties()
 	lecho "Configuring $red5pro_conf_properties.."
 
 	if [ ! -f "$red5pro_conf_properties" ]; then
-	    lecho "Error : File  $red5pro_conf_properties not found!"
+	    lecho_err "Error : File  $red5pro_conf_properties not found!"
 	    pause
 	fi
 
 
 	if [ ! -f "$red5pro_installer_conf_properties" ]; then
-	    lecho "Error : File  $red5pro_installer_conf_properties not found!"
+	    lecho_err "Error : File  $red5pro_installer_conf_properties not found!"
 	    pause
 	fi
 
@@ -1162,7 +1112,7 @@ modify_jvm_memory()
 		red5_sh_file=$rpro_path/$RED5SH
 
 		if [ ! -f $red5_sh_file ]; then
-	  		lecho "CRITICAL ERROR! $red5_sh_file was not found!"
+	  		lecho_err "CRITICAL ERROR! $red5_sh_file was not found!"
 			pause;
 		else
 			# red5_sh_content=`cat $red5_sh_file`
@@ -1253,9 +1203,9 @@ red5pro_com_login_form()
 
 	rpro_form_valid=1
 
-	echo "============================================="
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "Please enter your 'red5pro.com' login details"
-	echo "============================================="
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	
 	echo "Enter Email : "
 	read rpro_email
@@ -1317,7 +1267,7 @@ red5pro_com_login_form()
 				pause	
 			fi
 		else
-			lecho "Failed to authenticate with website!"
+			lecho_err "Failed to authenticate with website!"
 			read -r -p " -- Retry? [y/N] " try_login_response
 			case $try_login_response in
 			[yY][eE][sS]|[yY]) 
@@ -1330,7 +1280,7 @@ red5pro_com_login_form()
 		fi
 		
 	else
-		lecho "Invalid request parameters"
+		lecho_err "Invalid request parameters"
 		read -r -p " -- Retry? [y/N] " try_login_response
 		case $try_login_response in
 		[yY][eE][sS]|[yY]) 
@@ -1410,13 +1360,13 @@ auto_install_rpro()
 	download_latest
 
 	if [ "$latest_rpro_download_success" -eq 0 ]; then
-		echo "Failed to download latest Red5 Pro distribution from 'red5pro.com'. Please contact support!"
+		lecho_err "Failed to download latest Red5 Pro distribution from 'red5pro.com'. Please contact support!"
 		pause
 	fi
 
 
 	if [ -z "$rpro_zip" ]; then
-		echo "Downloaded file could not be found or is invalid. Exiting now!"
+		lecho_err "Downloaded file could not be found or is invalid. Exiting now!"
 		pause
 	fi
 
@@ -1428,7 +1378,7 @@ auto_install_rpro()
 	install_rpro_zip $rpro_zip
 
 	if [ "$red5_zip_install_success" -eq 0 ]; then		
-		lecho "Failed to install Red5 Pro distribution. Something went wrong!! Try again or contact support!"
+		lecho_err "Failed to install Red5 Pro distribution. Something went wrong!! Try again or contact support!"
 	fi
 
 	
@@ -1458,13 +1408,13 @@ auto_install_rpro_url()
 	download_from_url
 
 	if [ "$latest_rpro_download_success" -eq 0 ]; then
-		echo "Failed to download Red5 Pro distribution from $RED5PRO_DOWNLOAD_URL. Please contact support!"
+		lecho_err "Failed to download Red5 Pro distribution from $RED5PRO_DOWNLOAD_URL. Please contact support!"
 		pause
 	fi
 
 
 	if [ -z "$rpro_zip" ]; then
-		echo "Downloaded file could not be found or is invalid. Exiting now!"
+		lecho_err "Downloaded file could not be found or is invalid. Exiting now!"
 		pause
 	fi
 
@@ -1476,7 +1426,7 @@ auto_install_rpro_url()
 	install_rpro_zip $rpro_zip $RED5PRO_DOWNLOAD_URL
 
 	if [ "$red5_zip_install_success" -eq 0 ]; then		
-		lecho "Failed to install Red5 Pro distribution. Something went wrong!! Try again or contact support!"
+		lecho_err "Failed to install Red5 Pro distribution. Something went wrong!! Try again or contact support!"
 	fi
 
 	
@@ -1629,7 +1579,7 @@ install_rpro_zip()
 
 		if [ $rpro_backup_success -eq 0 ]; then
 			# proceed to install new Red5 Pro
-			lecho "Failed to create a backup of your existing Red5 Pro installation"
+			lecho_err "Failed to create a backup of your existing Red5 Pro installation"
 			pause
 		fi	
 
@@ -1652,13 +1602,13 @@ install_rpro_zip()
 	
 	
 	if ! unzip $rpro_zip_path -d $unzip_dest; then
-		lecho "Failed to extract zip. Possible invalid archive"
+		lecho_err "Failed to extract zip. Possible invalid archive"
 		pause;
 	fi
 
 
 	if [ ! -d "$unzip_dest" ]; then
-		lecho "Could not create output directory."
+		lecho_err "Could not create output directory."
 		pause;
 	fi
 
@@ -1748,7 +1698,7 @@ install_rpro_zip()
 		register_rpro_service
 		
 		if [ "$rpro_service_install_success" -eq 0 ]; then
-		lecho "Failed to register Red5 Pro service. Something went wrong!! Try again or contact support!"
+		lecho_err "Failed to register Red5 Pro service. Something went wrong!! Try again or contact support!"
 		pause
 		fi
 	;;
@@ -2523,158 +2473,7 @@ check_current_rpro()
 ## PRIVATE ###
 restore_rpro()
 {
-	cls
-
-	rpro_backup_restore_wizard=0
-
-	RPRO_BACKUP_FOLDER=$1
-
-	lecho "Initializing restore procedure..."
-
-	echo "##########################################################################"
-	echo "This interactive wizard will help you with some basic backup restore steps."
-	echo "If you wish to skip a step you can always restore it manually later. Please" 
-	echo "note that the restore actions cannot be undone!!"
-	echo "##########################################################################"
-
-	empty_pause
-	
-	empty_line
-	
-	lecho "Attempting to restore from $RPRO_BACKUP_FOLDER into $DEFAULT_RPRO_PATH. Please follow on-screen instructions carefully"
-
-	sleep 2
-
-	
-	##################################################################################################
-	################################### RESTORE LICENSE ##############################################
-	empty_line
-	echo "----------- STEP - 1 - LICENSE RESTORE -----------"
-	empty_line
-	read -r -p "Did you have a active Red5 Pro license in your backup that you wish to restore ? [y/N] " response
-	LICENCE_KEY_FILE=$RPRO_BACKUP_FOLDER/LICENSE.KEY
-	LICENCE_KEY_DEST_FILE=$DEFAULT_RPRO_PATH/LICENSE.KEY
-	case $response in
-	[yY][eE][sS]|[yY]) 
-
-	if [ -f $LICENCE_KEY_FILE ]; then
-		cp -rf $LICENCE_KEY_FILE $LICENCE_KEY_DEST_FILE
-		if [ -f $LICENCE_KEY_DEST_FILE ]; then
-			lecho "License file restored!"
-		fi
-	else
-		lecho "No license file found to restore!"
-	fi
-
-	;;
-	*)
-	lecho "Skipping..."
-	sleep 1
-	;;
-	esac
-
-
-
-
-	##################################################################################################
-	################################### RESTORE CLUSTERING ###########################################
-	empty_line
-	echo "----------- STEP - 2 - CLUSTERING CONFIGURATION RESTORE -----------"
-	empty_line
-	read -r -p "Did you have active clustering configuration (in red5-default.xml) that you wish to restore ? [y/N] " response
-	CLUSTER_CONF_FILE=$RPRO_BACKUP_FOLDER/webapps/red5-default.xml
-	CLUSTER_CONF_DEST_FILE=$DEFAULT_RPRO_PATH/webapps/red5-default.xml
-	case $response in
-	[yY][eE][sS]|[yY]) 
-
-	if [ -f $CLUSTER_CONF_FILE ]; then
-		cp -rf $CLUSTER_CONF_FILE $CLUSTER_CONF_DEST_FILE
-		if [ -f $CLUSTER_CONF_DEST_FILE ]; then
-			lecho "Cluster configuration restored!"
-		fi
-	else
-		lecho "No Cluster configuration file found to restore!"
-	fi
-
-	;;
-	*)
-	lecho "Skipping..."
-	sleep 1
-	;;
-	esac
-
-
-	##################################################################################################
-	################################### RESTORE APPLICATIONS #########################################
-	empty_line
-	echo "----------- STEP - 3 - WEBAPPS RESTORE -----------"
-	empty_line
-	read -r -p "Do you wish to restore applications ? [y/N] " response
-	BACKUP_WEBAPPS_FOLDER="$RPRO_BACKUP_FOLDER/webapps"
-	case $response in
-	[yY][eE][sS]|[yY]) 
-
-		lecho "Scanning for applications in backup...."
-		apps_to_restore=0
-		for i in $(ls -d "$BACKUP_WEBAPPS_FOLDER/"*/); 
-			do 
-				webapp=${i%%/}
-				webapp="$(basename $webapp)"
-				echo "Found $webapp"
-				apps_to_restore=$((apps_to_restore+1))
-			done
-
-		echo "Total applications found = $apps_to_restore"
-		sleep 2
-
-
-	#################################################################################################
-	
-		apps_to_restore=0
-		for i in $(ls -d "$BACKUP_WEBAPPS_FOLDER/"*/); 
-		do 
-			WEBAPP_PATH=${i}
-			webapp=${i%%/}
-			webapp="$(basename $webapp)"
-			
-			read -r -p "Do you wish to restore application $webapp : ? [y/N] " response
-			case $response in
-			[yY][eE][sS]|[yY]) 
-
-			# Eval path
-			DEST_WEBAPP_PATH="$DEFAULT_RPRO_PATH/webapps/$webapp"
-
-			# Remove old
-			lecho "Clearing target.. $DEST_WEBAPP_PATH"
-			rm -rf $DEST_WEBAPP_PATH
-
-			# Restore backup
-			lecho "Copying files from $WEBAPP_PATH to $DEST_WEBAPP_PATH"
-			cp -R $WEBAPP_PATH $DEST_WEBAPP_PATH
-			chmod -R ugo+w $DEST_WEBAPP_PATH
-			;;
-			*)
-			lecho "Skipping..."
-			sleep 1
-			;;
-			esac
-			
-		done
-
-	;;
-	*)
-	lecho "Skipping..."
-	sleep 1
-	;;
-	esac
-
-
-	#################################################################################################
-	empty_line
-	rpro_backup_restore_wizard=1	
-	lecho "Restore wizard steps completed! IF your Red5 Pro installation does not work as expected please try restoring manually instead. - Thank you";
-	empty_pause
-	
+	lecho "Not implemented"	
 }
 
 
@@ -2698,10 +2497,10 @@ backup_rpro()
 
 		# echo "Stopping Red5 Pro if it was running..."
 		stop_red5pro_service 1
-		sleep 10
+		sleep 2
 
 		lecho "Backing up... "
-		sleep 5
+		sleep 2
 
 		# Create backup folder
 		t_now=`date +%Y-%m-%d-%H-%M-%S`
@@ -2728,7 +2527,7 @@ backup_rpro()
 		empty_pause
 
 	else
-		lecho "Failed to create backup directory. Backup will be skipped..."
+		lecho_err "Failed to create backup directory. Backup will be skipped..."
 
 	fi
 
@@ -2741,89 +2540,7 @@ backup_rpro()
 
 upgrade()
 {
-	upgrade_rpro_success=0
-
-	# Determine upgrade type
-	upgrade_from_zip=0
-
-
-	if [ $# -eq 1 ]; then
-		upgrade_from_zip=1
-	else
-		upgrade_from_zip=0		
-	fi
-
-
-	# Start process
-	lecho "Initializing upgrade process..."
-	sleep 2
-
-	check_current_rpro 1
-
-	if [ "$rpro_exists" -eq "1" ]; then
-		upgrade_mode=1
-		# echo "It is recommended that you make a backup of your old server files. "
-		lecho "An existing Red5 Pro installation was found at install destination.If you continue this will be replaced. The old installation will be backed up to $RPRO_BACKUP_HOME"
-		read -r -p "Do you wish to continue ? [y/N] " response
-
-		case $response in
-		[yY][eE][sS]|[yY]) 
-		
-		# backup Red5 Pro
-		backup_rpro
-
-		if [ $rpro_backup_success -eq 1 ]; then
-			lecho "Preparing to install Red5 Pro"
-			# proceed to install new Red5 Pro 
-			if [ $upgrade_from_zip -eq 1 ]; then
-			install_rpro_zip
-			else
-			auto_install_rpro 1
-			fi
-		else
-			lecho "Failed to create a backup of your existing Red5 Pro installation"
-			upgrade_clean $upgrade_from_zip
-			# check install state here
-			pause
-		fi
-		;;
-		*)
-		lecho "Upgrade cancelled"
-		;;
-		esac
-	else
-		upgrade_mode=0
-		lecho "This option is invalid since there is no Red5 Pro installation to upgrade. You can upgrade only after a clean install!"
-		# upgrade_clean $upgrade_from_zip
-		# check install state here
-	fi
-
-
-	# If install is successful try restore....
-	if [[ $red5_zip_install_success -eq 1 ]]; then
-
-		if [[ $upgrade_mode -eq 1 ]]; then
-			
-			lecho "Congratulations!! You have successfully installed a new version of Red5 Pro" 
-			read -r -p "Do you need any help with restoring your previous settings? [y/N] " response
-
-			case $response in
-			[yY][eE][sS]|[yY]) 		
-				# start restore wizard
-				if [ -d $RPRO_BACKUP_FOLDER ]; then
-				restore_rpro $RPRO_BACKUP_FOLDER
-				fi
-			;;
-			*)
-			;;
-			esac
-
-		fi
-	fi
-
-
-	pause
-
+	lecho "Not implemented"
 }
 
 
@@ -2833,30 +2550,7 @@ upgrade()
 ## PRIVATE ###
 upgrade_clean()
 {
-	# Determine upgrade type
-	upgrade_from_zip=0
-
-	if [ $# -eq 1 ]; then
-		upgrade_from_zip=1
-	else
-		upgrade_from_zip=0		
-	fi
-
-	write_log "Initiating clean upgrade"
-	read -r -p "Do you wish to proceed with a clean installation? [y/N] " response
-
-	case $response in
-	[yY][eE][sS]|[yY]) 
-	if [ $upgrade_from_zip -eq 1 ]; then
-	install_rpro_zip
-	else
-	auto_install_rpro
-	fi
-	;;
-	*)
-	lecho "Upgrade cancelled"
-	;;
-	esac
+	lecho "Not implemented"
 }
 
 
@@ -2978,12 +2672,12 @@ licence_menu()
 
 	cls
 
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"	
-	echo " ----------- MANAGE LICENSE ------------- "
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+	echo -e "\e[44m ----------- MANAGE LICENSE ------------- \e[m"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "1. ADD / UPDATE LICENSE"
 	echo "2. VIEW LICENSE"
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "3. BACK TO MAIN MENU"
 	echo "			  "   
 }
@@ -3002,12 +2696,12 @@ license_menu_read_options(){
 		2) check_license 0 ;;
 		3) 
 		if [ $MODE -eq  1]; then 
-		show_advance_menu 
+		show_utility_menu 
 		else 
 		show_simple_menu 
 		fi 
 		;;
-		*) echo -e "${RED}Error...${STD}" && sleep 2
+		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_licence_menu ;;
 	esac
 }
 
@@ -3020,7 +2714,7 @@ license_menu_read_options(){
 
 
 
-show_advance_menu()
+show_utility_menu()
 {
 	advance_menu
 	advance_menu_read_options
@@ -3029,19 +2723,18 @@ show_advance_menu()
 
 advance_menu()
 {
-
 	cls
 
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-"	
-	echo " RED5 PRO INSTALLER - UTILITY MODE         "
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+	echo -e "\e[44m RED5 PRO INSTALLER - UTILITY MODE \e[m"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "1. --- CHECK EXISTING RED5 PRO INSTALLATION"
 	echo "2. --- WHICH JAVA AM I USING ?		 "
 	echo "3. --- INSTALL RED5 PRO SERVICE		 "
 	echo "4. --- UNINSTALL RED5 PRO SERVICE		 "
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "5. BACK TO MODE SELECTION"
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "0. Exit					 "
 	echo "                             		 "
 
@@ -3057,13 +2750,13 @@ advance_menu_read_options(){
 	local choice
 	read -p "Enter choice [ 1 - 5 | 0 to exit]] " choice
 	case $choice in
-		1) check_current_rpro ;;
-		2) check_java 1 ;;
-		3) register_rpro_as_service ;;
-		4) unregister_rpro_as_service ;;
-		5) main ;;
+		1) cls && check_current_rpro ;;
+		2) cls && check_java 1 ;;
+		3) cls && register_rpro_as_service ;;
+		4) cls && unregister_rpro_as_service ;;
+		5) cls && main ;;
 		0) exit 0;;
-		*) echo -e "${RED}Error...${STD}" && sleep 2 && exit 0
+		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_utility_menu ;;
 	esac
 }
 
@@ -3096,25 +2789,25 @@ simple_menu()
 
 	cls
 
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"	
-	echo " RED5 PRO INSTALLER - BASIC MODE         	"
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+	echo -e "\e[44m RED5 PRO INSTALLER - BASIC MODE \e[m"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "1. --- INSTALL LATEST RED5 PRO		"
 	echo "2. --- INSTALL RED5 PRO FROM URL		"
 	echo "3. --- REMOVE RED5 PRO INSTALLATION	"
 	echo "4. --- ADD / UPDATE RED5 PRO LICENSE	"
-	echo "5. ----SSL CERT INSTALLER 		"
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "------ RED5 PRO SERVICE OPTIONS -----------"
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	echo "5. --- SSL CERT INSTALLER 		"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+	echo "------ RED5 PRO SERVICE OPTIONS		"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "6. --- START RED5 PRO			"
 	echo "7. --- STOP RED5 PRO			"
 	echo "8. --- RESTART RED5 PRO			"
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "9. --- BACK TO MODE SELECTION"
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "0. --- Exit				"
-	echo "                             "
+	echo "                             		"
 
 }
 
@@ -3132,17 +2825,17 @@ simple_menu_read_options(){
 	read -p "Enter choice [ 1 - 7 | 0 to exit] " choice
 	case $choice in
 		# 1) check_current_rpro ;;
-		1) auto_install_rpro ;;
-		2) auto_install_rpro_url ;;
-		3) remove_rpro_installation ;;
-		4) show_licence_menu ;;
-		5) rpro_ssl_installer ;;
-		6) start_red5pro_service ;;
-		7) stop_red5pro_service ;;
-		8) restart_red5pro_service ;;
-		9) main ;;
+		1) cls && auto_install_rpro ;;
+		2) cls && auto_install_rpro_url ;;
+		3) cls && remove_rpro_installation ;;
+		4) cls && show_licence_menu ;;
+		5) cls && rpro_ssl_installer ;;
+		6) cls && start_red5pro_service ;;
+		7) cls && stop_red5pro_service ;;
+		8) cls && restart_red5pro_service ;;
+		9) cls && main ;;
 		0) exit 0;;
-		*) echo -e "${RED}Error...${STD}" && sleep 2 && exit 0
+		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu ;;
 	esac
 }
 
@@ -3160,8 +2853,9 @@ load_configuration()
 {
 
 	if [ ! -f $CONFIGURATION_FILE ]; then
-		echo "CRITICAL ERROR!! - Configuration file not found!"
-		echo "Exiting..."
+
+		echo -e "\e[41m CRITICAL ERROR!! - Configuration file not found!\e[m"
+		echo -e "\e[41m Exiting...\e[m"
 		exit 0
 	fi
 
@@ -3298,7 +2992,7 @@ simple_usage_mode()
 
 
 
-advance_usage_mode()
+utility_usage_mode()
 {
 	write_log "Utility mode selected"
 
@@ -3315,21 +3009,21 @@ welcome_menu()
 	cls
 
 
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"	
-	echo " RED5 PRO INSTALLER - W E L C O M E   M E N U"
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+	echo -e "\e[44m RED5 PRO INSTALLER - WELCOME MENU \e[m"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 
 	detect_system
 
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 
-	echo "                             "
-	echo "1. BASIC MODE (Recommended)"
-	echo "                             "
-	echo "2. UTILITY MODE"
-	echo "                             "
-	echo "0. Exit"
-	echo "                             "
+	echo "                             		"
+	echo "1. BASIC MODE (Recommended)		"
+	echo "                             		"
+	echo "2. UTILITY MODE				"
+	echo "                             		"
+	echo "0. Exit					"
+	echo "                             		"
 }
 
 
@@ -3342,9 +3036,9 @@ read_welcome_menu_options()
 	read -p "Enter choice [ 1 - 2 | 0 to exit] " choice
 	case $choice in
 		1) simple_usage_mode ;;
-		2) advance_usage_mode ;;
+		2) utility_usage_mode ;;
 		0) exit 0;;
-		*) echo -e "${RED}Error...${STD}" && sleep 2
+		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && main ;;
 	esac
 }
 
@@ -3641,6 +3335,9 @@ repo_has_required_java_rhl()
 
 #################################################################################################
 
+# RED => echo -e "\e[31m Home directory\e[m"
+# RED in yello echo -e "\e[41m Home directory\e[m"
+# Soothing blue and white echo -e "\e[44m ----------- MANAGE LICENSE ------------- \e[m"
 
 
 # Load configuration
@@ -3649,6 +3346,8 @@ load_configuration
 
 # Start application
 write_log "====================================="
-write_log "	NEW INSTALLER SESSION		"
+write_log "	NEW INSTALLER SESSION	
+	"
 main
+
 
