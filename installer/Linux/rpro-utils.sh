@@ -255,6 +255,24 @@ check_unzip()
 
 
 # Public
+
+check_git()
+{
+	write_log "Checking for git software"	
+	git_check_success=0
+
+	if isinstalled git; then
+	git_check_success=1
+	write_log "git utility was found"
+	else
+	git_check_success=0
+	lecho "git utility not found."
+	fi
+}
+
+
+
+
 check_wget()
 {
 	write_log "Checking for wget utility"	
@@ -500,6 +518,21 @@ install_unzip_rhl()
 
 
 # Public
+
+
+install_git()
+{
+	write_log "Installing git"
+
+	if isDebian; then
+	install_git_deb	
+	else
+	install_git_rhl
+	fi		
+}
+
+
+
 install_wget()
 {
 	write_log "Installing wget"
@@ -526,11 +559,34 @@ install_bc()
 
 
 # Private
+
+install_git_deb()
+{
+	write_log "Installing git on debian"
+
+	apt-get install -y git
+
+	install_git="$(which git)";
+	lecho "git installed at $install_git"
+}
+
+
+install_git_rhl()
+{
+	write_log "Installing git on rhle"
+
+	yum -y install git
+
+	install_git="$(which git)";
+	lecho "git installed at $install_git"
+}
+
+
+
 install_wget_deb()
 {
 	write_log "Installing wget on debian"
 
-	apt-get update
 	apt-get install -y wget
 
 	install_wget="$(which wget)";
@@ -648,32 +704,44 @@ rpro_ssl_installer()
 		fi
 	fi
 
+
+	# Check for Red5 Pro
+	check_current_rpro 1 1
+	if [[ $rpro_exists -eq 0 ]]; then
+		pause
+	fi
 	
 
 	# Stopping Red5 Pro if running [ VERY iMPORTANT! ]
+	lecho "Red5 Pro will be stopped temporarily (If running), for the Letsencrypt SSL challenge to complete successfully!."
+	sleep 5
 	stop_red5pro_service 1
+
 
 
 	# Initializing letsencrypt => Need better way to know if this is first time setup or already setup
 
 	cd "$RED5PRO_SSL_LETSENCRYPT_FOLDER"	
 
-	lecho "====================================" 
-	lecho "1. Preparing letsencrypt as needed" 
-	lecho "===================================="
+	lecho "==========================================="  
+	lecho " Preparing letsencrypt as needed" 
+	lecho "==========================================="
+
+	sleep 2
  
 	./letsencrypt-auto --help 2>&1 | tee -a "$LOG_FILE"
 
 	
 	# Get Certificate
-
-	rpro_ssl_reg_domain="ssltester.flashvisions.com"
-	rpro_ssl_reg_email="rajdeeprath@gmail.com"
+	ssl_cert_request_form	
 
 
-	lecho "==============================" 
-	lecho "2. Requesting SSL certificate" 
-	lecho "==============================" 
+
+	lecho "==========================================="
+	lecho "Requesting SSL certificate" 
+	lecho "===========================================" 
+
+	sleep 2
 
 
 	letsencrypt_cert_gen_success=0
@@ -722,7 +790,7 @@ rpro_ssl_installer()
 	
 
 	# Ask for keystore password here -> input
-	rpro_keystore_cert_pass="xyz123"
+	ssl_cert_passphrase_form
 
 
 	openssl pkcs12 -export -in "$rpro_ssl_fullchain" -inkey "$rpro_ssl_privkey" -out "$rpro_ssl_fullchain_and_key" -password pass:"$rpro_keystore_cert_pass" -name tomcat
@@ -745,9 +813,9 @@ rpro_ssl_installer()
 	rpro_ssl_trust_store_rtmps_truststorefie="rtmps.truststorefile=$rpro_ssl_trust_store"
 
 	
-	lecho "===============================" 
-	lecho "3. Updating configuration files" 
-	lecho "==============================="
+	lecho "==========================================="  
+	lecho "Updating configuration files" 
+	lecho "==========================================="
 	
 
 	## Substitute appropriate files to enable ssl
@@ -778,6 +846,133 @@ rpro_ssl_installer()
 	esac
 	
 }
+
+
+ssl_cert_request_form()
+{
+	cls
+
+	lecho "==========================================="
+	lecho "-------- SSL CERTIFICATE REQUEST ----------" 
+	lecho "===========================================" 
+
+
+	rpro_ssl_form_valid=1
+	rpro_ssl_domain_valid=0
+	rpro_ssl_email_valid=0
+
+
+	echo "Enter Domain (The domain name for which SSL cert is required): "
+	read rpro_ssl_reg_domain
+
+	echo "Enter Email (The email address to identify the SSL with) : "
+	read rpro_ssl_reg_email
+
+
+	# Simple domain name validation
+	if [ ! -z "$rpro_ssl_reg_domain" -a "$rpro_ssl_reg_domain" != " " ]; then	
+		rpro_ssl_reg_domain_valid=1		
+	else
+		rpro_ssl_form_valid=0
+		lecho "Invalid 'Domain' string!"		
+	fi
+
+
+
+	# simple validate email
+	if echo "${rpro_ssl_reg_email}" | grep '^[a-zA-Z0-9]*@[a-zA-Z0-9]*\.[a-zA-Z0-9]*$' >/dev/null; then
+		rpro_ssl_reg_email_valid=1		
+	else
+		rpro_ssl_form_valid=0
+		lecho "Invalid 'Email' string!"		
+	fi
+
+
+
+	# if all params not valid
+	if [ "$rpro_ssl_form_valid" -eq "0" ]; then
+	
+		lecho "One or more parameters are invalid. Please check and try again!"
+		read -r -p " -- Retry? [y/N] " try_login_response
+		case $try_login_response in
+		[yY][eE][sS]|[yY]) 
+		ssl_cert_request_form
+		;;
+		*)
+		pause
+		;;
+		esac		
+	fi
+}
+
+
+
+
+ssl_cert_passphrase_form()
+{
+	#rpro_keystore_cert_pass="xyz123"
+
+	cls
+
+	lecho "==========================================="
+	lecho "------- SSL CERTIFICATE PASSWORD ----------" 
+	lecho "===========================================" 
+
+	rpro_ssl_cert_passphrase_form_valid=0
+	rpro_ssl_cert_passphrase_form_error="Unknown error!"
+	rpro_ssl_cert_passphrase_valid=0
+
+
+	echo "Enter the  SSL cert password (This password is used for 'keystore' and 'truststore'): "
+	read -s rpro_ssl_cert_passphrase
+
+	echo "Confirm password"
+	read -s rpro_ssl_cert_passphrase_copy
+
+
+	
+	# simple validate password
+	if [ ! -z "$rpro_ssl_cert_passphrase" -a "$rpro_ssl_cert_passphrase" != " " ]; then		
+
+		if [ "$rpro_ssl_cert_passphrase" == "$rpro_ssl_cert_passphrase_copy" ]; then
+
+			rpro_ssl_cert_passphrase_length=size=${#rpro_ssl_cert_passphrase} 
+
+			if [[ "$rpro_ssl_cert_passphrase_length" -gt 4 ]]; then
+				rpro_ssl_cert_passphrase_valid=1
+			else
+				rpro_ssl_cert_passphrase_valid=0
+				rpro_ssl_cert_passphrase_form_error="Invalid password length. Minimum length should be 5"
+			fi
+		else
+			rpro_ssl_cert_passphrase_valid=0
+			rpro_ssl_cert_passphrase_form_error="Passwords do not match!"
+		fi		
+	else
+		rpro_ssl_cert_passphrase_valid=0
+		rpro_ssl_cert_passphrase_form_error="Password cannot be empty!"
+	fi
+
+
+
+	# If all params not valid
+	if [ "$rpro_ssl_cert_passphrase_valid" -eq "0" ]; then
+	
+		lecho "There seems to be a problem with the cert password.Cause:$rpro_ssl_cert_passphrase_form_error.Please check and try again!"
+		read -r -p " -- Retry? [y/N] " try_login_response
+		case $try_login_response in
+		[yY][eE][sS]|[yY]) 
+		ssl_cert_passphrase_form
+		;;
+		*)
+		pause
+		;;
+		esac		
+	fi
+
+	rpro_keystore_cert_pass=$rpro_ssl_cert_passphrase
+}
+
 
 
 config_ssl_jeecontainer()
@@ -2792,18 +2987,18 @@ advance_menu()
 
 	cls
 
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"	
-	echo " RED5 PRO INSTALLER - ADVANCE MODE         	"
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "1. CHECK EXISTING RED5 PRO INSTALLATION"
-	echo "2. WHICH JAVA AM I USING ?"
-	echo "3. INSTALL RED5 PRO SERVICE"
-	echo "4. UNINSTALL RED5 PRO SERVICE"
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-"	
+	echo " RED5 PRO INSTALLER - UTILITY MODE         "
+	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-"
+	echo "1. --- CHECK EXISTING RED5 PRO INSTALLATION"
+	echo "2. --- WHICH JAVA AM I USING ?		 "
+	echo "3. --- INSTALL RED5 PRO SERVICE		 "
+	echo "4. --- UNINSTALL RED5 PRO SERVICE		 "
+	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "5. BACK TO MODE SELECTION"
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "0. Exit"
-	echo "                             "
+	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	echo "0. Exit					 "
+	echo "                             		 "
 
 }
 
@@ -2873,7 +3068,7 @@ simple_menu()
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "9. --- BACK TO MODE SELECTION"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "0. --- Exit"
+	echo "0. --- Exit				"
 	echo "                             "
 
 }
@@ -3060,7 +3255,7 @@ simple_usage_mode()
 
 advance_usage_mode()
 {
-	write_log "Advance mode selected"
+	write_log "Utility mode selected"
 
 	MODE=1
 	
@@ -3086,7 +3281,7 @@ welcome_menu()
 	echo "                             "
 	echo "1. BASIC MODE (Recommended)"
 	echo "                             "
-	echo "2. ADVANCE MODE"
+	echo "2. UTILITY MODE"
 	echo "                             "
 	echo "0. Exit"
 	echo "                             "
@@ -3130,10 +3325,24 @@ prerequisites()
 
 	prerequisites_update
 
+	prerequisites_git
 	prerequisites_java
 	prerequisites_unzip
 	prerequisites_wget
 	prerequisites_bc
+}
+
+
+prerequisites_git()
+{
+	check_git
+
+	if [[ $git_check_success -eq 0 ]]; then
+		echo "Installing git..."
+		sleep 2
+
+		install_git
+	fi 
 }
 
 
@@ -3395,5 +3604,6 @@ load_configuration
 
 # Start application
 write_log "====================================="
-write_log "	NEW INSTALLER SESSION	"
+write_log "	NEW INSTALLER SESSION		"
 main
+
