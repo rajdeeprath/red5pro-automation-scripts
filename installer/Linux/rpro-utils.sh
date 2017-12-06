@@ -2292,10 +2292,12 @@ stop_red5pro_service()
 
 		if [ ! -f "$RPRO_SERVICE_LOCATION/$RPRO_SERVICE_NAME" ];	then
 			lecho "It seems Red5 Pro service was not installed. Please register Red5 Pro service from the menu for best results."
-			lecho " Attempting to stop using \"red5-shutdown.sh\""
+			lecho " Attempting to stop using \"red5-shutdown.sh\" (if running)"
 
-			if is_running_red5pro_service_v1; then
+			if is_running_red5pro_service_v1; then				
 				cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh > /dev/null 2>&1 &
+				lecho "Note : it may take a few seconds for the server to shut down."
+				sleep 10
 			else
 				lecho "Server is not running!" 
 			fi	
@@ -2448,6 +2450,10 @@ remove_rpro_installation()
 
 		case $response in
 		[yY][eE][sS]|[yY]) 
+
+		# Stop if running
+		stop_red5pro_service 1
+
 		# remove rpro service
 		unregister_rpro_service
 
@@ -2535,6 +2541,15 @@ check_current_rpro()
 	if [ $# -eq 0 ]; then
 		pause		
 	fi
+
+
+	# return true or false
+	if [ ! "$rpro_exists" -eq 1 ] ; then
+		true
+	else
+		false
+	fi
+
 }
 
 
@@ -2804,12 +2819,16 @@ advance_menu()
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "1. --- CHECK EXISTING RED5 PRO INSTALLATION"
 	echo "2. --- WHICH JAVA AM I USING ?		 "
-	echo "3. --- INSTALL RED5 PRO SERVICE		 "
-	echo "4. --- UNINSTALL RED5 PRO SERVICE		 "
+	
+	if [[ $rpro_exists -eq 1 ]]; then
+		echo "3. --- INSTALL RED5 PRO SERVICE		 "
+		echo "4. --- UNINSTALL RED5 PRO SERVICE		 "
+	fi
+
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	echo "5. BACK TO MODE SELECTION"
+	echo "5. --- BACK TO MODE SELECTION"
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	echo "0. Exit					 "
+	echo "0. --- Exit					 "
 	echo "                             		 "
 
 }
@@ -2826,8 +2845,22 @@ advance_menu_read_options(){
 	case $choice in
 		1) cls && check_current_rpro ;;
 		2) cls && check_java 1 ;;
-		3) cls && register_rpro_as_service ;;
-		4) cls && unregister_rpro_as_service ;;
+		3) 
+
+			if [[ $rpro_exists -eq 1 ]]; then
+				cls && register_rpro_as_service
+			else
+				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_utility_menu
+			fi
+			;;
+		4) 
+
+			if [[ $rpro_exists -eq 1 ]]; then
+				cls && unregister_rpro_as_service
+			else
+				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_utility_menu
+			fi
+			;;
 		5) cls && main ;;
 		0) exit 0;;
 		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_utility_menu ;;
@@ -2863,20 +2896,31 @@ simple_menu()
 
 	cls
 
+	check_current_rpro 1 1
+
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo -e "\e[44m RED5 PRO INSTALLER - BASIC MODE \e[m"
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "1. --- INSTALL LATEST RED5 PRO		"
-	echo "2. --- INSTALL RED5 PRO FROM URL		"
-	echo "3. --- REMOVE RED5 PRO INSTALLATION	"
-	echo "4. --- ADD / UPDATE RED5 PRO LICENSE	"
-	echo "5. --- SSL CERT INSTALLER 		"
-	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	echo "------ RED5 PRO SERVICE OPTIONS		"
-	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	echo "6. --- START RED5 PRO			"
-	echo "7. --- STOP RED5 PRO			"
-	echo "8. --- RESTART RED5 PRO			"
+	echo "2. --- INSTALL RED5 PRO FROM URL 		"
+	echo -e "\e[40m [ The archive format should be same as provided on 'red5pro.com' ]\e[m"
+
+
+	if [[ $rpro_exists -eq 1 ]]; then
+
+		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+		echo "3. --- REMOVE RED5 PRO INSTALLATION	"
+		echo "4. --- ADD / UPDATE RED5 PRO LICENSE	"
+		echo "5. --- SSL CERT INSTALLER 		"
+		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+		echo "------ RED5 PRO SERVICE OPTIONS		"
+		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+		echo "6. --- START RED5 PRO			"
+		echo "7. --- STOP RED5 PRO			"
+		echo "8. --- RESTART RED5 PRO			"
+	fi
+
+
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "9. --- BACK TO MODE SELECTION"
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
@@ -2901,12 +2945,51 @@ simple_menu_read_options(){
 		# 1) check_current_rpro ;;
 		1) cls && auto_install_rpro ;;
 		2) cls && auto_install_rpro_url ;;
-		3) cls && remove_rpro_installation ;;
-		4) cls && show_licence_menu ;;
-		5) cls && rpro_ssl_installer ;;
-		6) cls && start_red5pro_service ;;
-		7) cls && stop_red5pro_service ;;
-		8) cls && restart_red5pro_service ;;
+		3) 
+			if [[ $rpro_exists -eq 1 ]]; then
+				cls && remove_rpro_installation 
+			else
+				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu
+			fi
+			;;
+		4) 
+			if [[ $rpro_exists -eq 1 ]]; then
+				cls && show_licence_menu
+			else
+				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu
+			fi
+			;;
+		5) 
+			if [[ $rpro_exists -eq 1 ]]; then
+				cls && rpro_ssl_installer
+			else
+				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu
+			fi
+			;;
+		6) 
+
+			if [[ $rpro_exists -eq 1 ]]; then
+				cls && start_red5pro_service
+			else
+				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu
+			fi
+			;;
+		7) 
+
+			if [[ $rpro_exists -eq 1 ]]; then
+				cls && stop_red5pro_service
+			else
+				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu
+			fi
+			;;
+		8)
+
+			if [[ $rpro_exists -eq 1 ]]; then
+				cls && restart_red5pro_service
+			else
+				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu
+			fi
+			;;
 		9) cls && main ;;
 		0) exit 0;;
 		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu ;;
@@ -3084,7 +3167,7 @@ welcome_menu()
 
 
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	echo -e "\e[44m RED5 PRO INSTALLER - WELCOME MENU \e[m"
+	echo -e "\e[44m RED5 PRO INSTALLER - MAIN MENU \e[m"
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 
 	detect_system
