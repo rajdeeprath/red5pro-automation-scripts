@@ -718,7 +718,7 @@ rpro_ssl_installer()
 	cd "$RED5PRO_SSL_LETSENCRYPT_FOLDER"	
 
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	lecho " Preparing letsencrypt as needed" 
+	lecho " Preparing letsencrypt" 
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 
 	sleep 2
@@ -727,7 +727,7 @@ rpro_ssl_installer()
 
 	
 	# Get Certificate
-	ssl_cert_request_form	
+	ssl_cert_request_form
 
 
 	# detect if cert exists for the domain
@@ -896,7 +896,6 @@ rpro_ssl_installer()
 	restart_red5pro_service
 	;;
 	*)
-	show_utility_menu
 	;;
 	esac
 
@@ -917,9 +916,9 @@ ssl_cert_request_form()
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 
 
-	rpro_ssl_form_valid=1
-	rpro_ssl_domain_valid=0
-	rpro_ssl_email_valid=0
+	local rpro_ssl_form_valid=1
+	local rpro_ssl_domain_valid=0
+	local rpro_ssl_email_valid=0
 
 
 	echo "Enter Domain (The domain name for which SSL cert is required): "
@@ -975,15 +974,15 @@ ssl_cert_passphrase_form()
 	lecho "------- SSL CERTIFICATE PASSWORD ----------" 
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 
-	rpro_ssl_cert_passphrase_form_valid=0
-	rpro_ssl_cert_passphrase_form_error="Unknown error!"
-	rpro_ssl_cert_passphrase_valid=0
+	local rpro_ssl_cert_passphrase_form_valid=0
+	local rpro_ssl_cert_passphrase_form_error="Unknown error!"
+	local rpro_ssl_cert_passphrase_valid=0
 
 
-	echo "Enter the  SSL cert password (This password is used for 'keystore' and 'truststore'): "
+	echo "Enter the  SSL cert password : "
 	read -s rpro_ssl_cert_passphrase
 
-	echo "Confirm password"
+	echo "Confirm password : "
 	read -s rpro_ssl_cert_passphrase_copy
 
 
@@ -1014,6 +1013,7 @@ ssl_cert_passphrase_form()
 
 
 	# If all params not valid
+	local try_login_response
 	if [ "$rpro_ssl_cert_passphrase_valid" -eq "0" ]; then
 	
 		lecho_err "There seems to be a problem with the cert password.Cause:$rpro_ssl_cert_passphrase_form_error.Please check and try again!"
@@ -1102,9 +1102,9 @@ read_ssl_config_domain_properties()
 	    pause
 	fi
 
-	letsencrypt_rtmps_keystorefile_pattern="rtmps.keystorefile*"
-	letsencrypt_rtmps_keystorefile_pattern_replace=""
-	letsencrypt_rtmps_keystorefile_value=
+	local letsencrypt_rtmps_keystorefile_pattern="rtmps.keystorefile*"
+	local letsencrypt_rtmps_keystorefile_pattern_replace=""
+	local letsencrypt_rtmps_keystorefile_value=
 	letsencrypt_ssl_cert_domain_value=
 
 	while IFS= read line
@@ -1148,44 +1148,44 @@ smart_config_ssl_properties()
 
 	# HTTP &  HTTPS
 
-	http_port_pattern="http.port=.*"
-	http_port_replacement_value="http.port=$RED5PRO_SSL_DEFAULT_HTTP_PORT"
-	https_port_pattern="https.port=.*"
-	https_port_replacement_value="https.port=$RED5PRO_SSL_DEFAULT_HTTPS_PORT"
+	local http_port_pattern="http.port=.*"
+	local http_port_replacement_value="http.port=$RED5PRO_SSL_DEFAULT_HTTP_PORT"
+	local https_port_pattern="https.port=.*"
+	local https_port_replacement_value="https.port=$RED5PRO_SSL_DEFAULT_HTTPS_PORT"
 
 
 	# RTMPS
 
-	rtmps_keystorepass_pattern="rtmps.keystorepass=.*"
-	rtmps_keystorepass_replacement_value="$rpro_ssl_trust_store_rtmps_keystorepass"
+	local rtmps_keystorepass_pattern="rtmps.keystorepass=.*"
+	local rtmps_keystorepass_replacement_value="$rpro_ssl_trust_store_rtmps_keystorepass"
 
-	rtmps_keystorefile_pattern="rtmps.keystorefile=.*"
-	rtmps_keystorefile_replacement_value="$rpro_ssl_trust_store_rtmps_keystorefile"
+	local rtmps_keystorefile_pattern="rtmps.keystorefile=.*"
+	local rtmps_keystorefile_replacement_value="$rpro_ssl_trust_store_rtmps_keystorefile"
 
-	rtmps_truststorepass_pattern="rtmps.truststorepass=.*"
-	rtmps_truststorepass_replacement_value="$rpro_ssl_trust_store_rtmps_truststorepass"
+	local rtmps_truststorepass_pattern="rtmps.truststorepass=.*"
+	local rtmps_truststorepass_replacement_value="$rpro_ssl_trust_store_rtmps_truststorepass"
 
-	rtmps_truststorefile_pattern="rtmps.truststorefile=.*"
-	rtmps_truststorefile_replacement_value="$rpro_ssl_trust_store_rtmps_truststorefie"
+	local rtmps_truststorefile_pattern="rtmps.truststorefile=.*"
+	local rtmps_truststorefile_replacement_value="$rpro_ssl_trust_store_rtmps_truststorefie"
 
 	# Websocket
 
-	ws_host_pattern="ws.host=.*" 
-	ws_host_replacement_value="ws.host=0.0.0.0"
+	local ws_host_pattern="ws.host=.*" 
+	local ws_host_replacement_value="ws.host=0.0.0.0"
 
-	ws_port_pattern="ws.port=.*" 
-	ws_port_replacement_value="ws.port=$RED5PRO_SSL_DEFAULT_WS_PORT"
+	local ws_port_pattern="ws.port=.*" 
+	local ws_port_replacement_value="ws.port=$RED5PRO_SSL_DEFAULT_WS_PORT"
 
-	wss_host_pattern="wss.host=.*" 
-	wss_host_replacement_value="wss.host=0.0.0.0"
+	local wss_host_pattern="wss.host=.*" 
+	local wss_host_replacement_value="wss.host=0.0.0.0"
 
-	wss_port_pattern="wss.port=.*" 
-	wss_port_replacement_value="wss.port=$RED5PRO_SSL_DEFAULT_WSS_PORT"
+	local wss_port_pattern="wss.port=.*" 
+	local wss_port_replacement_value="wss.port=$RED5PRO_SSL_DEFAULT_WSS_PORT"
 
-	ws_config_pattern="ws.port=.*"
-	ws_config_replacement_value="$ws_port_replacement_value\n$wss_host_replacement_value\n$wss_port_replacement_value"
+	local ws_config_pattern="ws.port=.*"
+	local ws_config_replacement_value="$ws_port_replacement_value\n$wss_host_replacement_value\n$wss_port_replacement_value"
 
-	has_wss_conf=0
+	local has_wss_conf=0
 
 	# Check if wss is already configured in the file
 	while IFS= read line
@@ -1232,6 +1232,7 @@ modify_jvm_memory()
 
 	check_current_rpro 1
 
+	local red5_sh_file
 	if [[ $rpro_exists -eq 1 ]]; then
 
 		red5_sh_file=$rpro_path/$RPRO_RED5SH
@@ -1264,14 +1265,14 @@ modify_jvm_memory()
 # Private
 eval_memory_to_allocate()
 {
-	low_mem_response=
+	local low_mem_response
+	local low_mem_message
 
 	phymem=$(free -m|awk '/^Mem:/{print $2}') # Value in Mb
 	# echo "Total Memory in MB = $phymem"
-	alloc_phymem=$(awk "BEGIN { pc=${phymem}*${RED5PRO_MEMORY_PCT}/100; print int(pc);}") # calculate percentage to allocate
+	local alloc_phymem=$(awk "BEGIN { pc=${phymem}*${RED5PRO_MEMORY_PCT}/100; print int(pc);}") # calculate percentage to allocate
 	alloc_phymem=$(bc <<< "scale=1;$alloc_phymem/1024") # Mb to Gb
 	alloc_phymem_rounded=$(printf "%.0f" $alloc_phymem) # Round off
-	low_mem_message=
 	
 
 	if [[ "$alloc_phymem_rounded" -lt 2 ]]; then
@@ -1314,8 +1315,8 @@ download_latest()
 	clear
 	
 
-	rpro_email_valid=0
-	rpro_password_valid=0
+	local rpro_email_valid=0
+	local rpro_password_valid=0
 
 	latest_rpro_download_success=0
 	rpro_zip=
@@ -1336,7 +1337,8 @@ download_latest()
 red5pro_com_login_form()
 {
 
-	rpro_form_valid=1
+	local rpro_form_valid=1
+	local try_login_response
 
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "Please enter your 'red5pro.com' login details"
@@ -1378,7 +1380,7 @@ red5pro_com_login_form()
 		echo "$(cat $RPRO_LOG_FILE)$wget_status" > $RPRO_LOG_FILE	
 
 		# Check http code
-		wget_status_ok=0
+		local wget_status_ok=0
 		if [[ $wget_status == *"HTTP/1.1 200"* ]] 
 		then
 			wget_status_ok=1
@@ -1402,6 +1404,7 @@ red5pro_com_login_form()
 				pause	
 			fi
 		else
+			
 			lecho_err "Failed to authenticate with website!"
 			read -r -p " -- Retry? [y/N] " try_login_response
 			case $try_login_response in
@@ -1664,10 +1667,10 @@ install_rpro_zip()
 	fi
 
 
-	filename=$(basename "$rpro_zip_path")
-	extension="${filename##*.}"
+	local filename=$(basename "$rpro_zip_path")
+	local extension="${filename##*.}"
 	filename="${filename%.*}"
-	filesize=$(stat -c%s "$rpro_zip_path")
+	local filesize=$(stat -c%s "$rpro_zip_path")
 
 
 	if [ "$filesize" -lt 30000 ]; then
@@ -1796,6 +1799,7 @@ install_rpro_zip()
 
 		# Delete unzipped content
 		sudo rm -rf $unzip_dest
+
 		# Delete zip
 		sudo rm -rf $rpro_zip_path
 	fi
@@ -1965,7 +1969,7 @@ esac"
 
 
 	# make service file executable
-	sudo chmod 777 /etc/init.d/red5pro
+	sudo chmod 644 /etc/init.d/red5pro
 
 	if isDebian; then
 	register_rpro_service_deb	
@@ -2451,7 +2455,7 @@ is_running_red5pro_service_v2()
 
 is_running_red5pro_service_v1()
 {
-	red5_grep=$(ps aux | grep red5)	
+	local red5_grep=$(ps aux | grep red5)	
 	echo "$red5_grep" | grep 'org.red5.server.Bootstrap' &> /dev/null
 
 	if [ $? == 0 ]; then
@@ -2467,7 +2471,7 @@ is_running_red5pro_service()
 {
 	cd ~
 	
-	rpro_running=0
+	local rpro_running=0
 	check_current_rpro 1 1
 
 	if [ "$rpro_exists" -eq 1 ]; then
@@ -2505,18 +2509,18 @@ is_running_red5pro_service()
 
 remove_rpro_installation()
 {
-	lecho "Looking for Red5 Pro at default location..."
+	lecho "Looking for Red5 Pro at install location..."
 	sleep 2
 
 	if [ ! -d $DEFAULT_RPRO_PATH ]; then
-  		lecho "No Red5 Pro installation found at default location : $DEFAULT_RPRO_PATH"
+  		lecho "No Red5 Pro installation found at install location : $DEFAULT_RPRO_PATH"
 	else
 		red5pro_ini="$DEFAULT_RPRO_PATH/conf/red5.ini" 
 
 		if [ ! -f $red5pro_ini ]; then
-		lecho "There were files found at default location : $DEFAULT_RPRO_PATH, but the installation might be broken !. I could not locate version information"
+		lecho "There were files found at install location : $DEFAULT_RPRO_PATH, but the installation might be broken !. I could not locate version information"
 		else
-		echo "Red5 Pro installation found at default location : $DEFAULT_RPRO_PATH"
+		echo "Red5 Pro installation found at install location : $DEFAULT_RPRO_PATH"
 		echo "Warning! All file(s) and folder(s) at $DEFAULT_RPRO_PATH will be removed permanently"
 		read -r -p "Are you sure? [y/N] " response
 
@@ -2559,7 +2563,7 @@ remove_rpro_installation()
 check_current_rpro()
 {
 	rpro_exists=0
-	check_silent=0
+	local check_silent=0
 
 	# IF second param is set then turn on silent mode quick check
 	if [ $# -eq 2 ]; then
@@ -2568,28 +2572,28 @@ check_current_rpro()
 
 
 	if [ ! "$check_silent" -eq 1 ] ; then
-		lecho "Looking for Red5 Pro at default install location..."
+		lecho "Looking for Red5 Pro at install install location..."
 		sleep 2
 	fi
 
 
 	if [ ! -d $DEFAULT_RPRO_PATH ]; then
-  		lecho "No Red5 Pro installation found at default location : $DEFAULT_RPRO_PATH"
+  		lecho "No Red5 Pro installation found at install location : $DEFAULT_RPRO_PATH"
 	else
 		red5pro_ini="$DEFAULT_RPRO_PATH/conf/red5.ini" 
 
 		if [ ! -f $red5pro_ini ]; then
-		lecho "There were files found at default location : $DEFAULT_RPRO_PATH, but the installation might be broken !. I could not locate version information"
+		lecho "There were files found at install location : $DEFAULT_RPRO_PATH, but the installation might be broken !. I could not locate version information"
 		rpro_exists=1
 		else
 		rpro_exists=1
 
 		if [ ! "$check_silent" -eq 1 ] ; then
-		lecho "Red5 Pro installation found at default location : $DEFAULT_RPRO_PATH"
+		lecho "Red5 Pro installation found at install location : $DEFAULT_RPRO_PATH"
 		fi
 
-		pattern='server.version*'
-		replace=""
+		local pattern='server.version*'
+		local replace=""
 		while IFS= read line
 		do
 			case "$line" in			
@@ -2668,21 +2672,23 @@ backup_rpro()
 		RPRO_BACKUP_FOLDER="$RPRO_BACKUP_HOME/$t_now"
 
 		# Copy all files to backup folder
-		cp -R $DEFAULT_RPRO_PATH $RPRO_BACKUP_FOLDER
+		sudo cp -R $DEFAULT_RPRO_PATH $RPRO_BACKUP_FOLDER
 		sleep 2
 
 		# Show notice to user that back up was saved
 		if [ -d "$RPRO_BACKUP_FOLDER" ]; then
 			if [ -f $red5pro_ini ]; then
+				printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 				lecho "Your active Red5 Pro installation was backed up successfully to $RPRO_BACKUP_FOLDER"
-				echo "You can restore any necessary file(s) later from the backup manually."
+				lecho "You can restore any necessary file(s) later from the backup manually."
+				printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 				sudo chmod -R ugo+w $RPRO_BACKUP_FOLDER
 				rpro_backup_success=1
 			else
-				lecho "Something went wrong!! Perhaps files were not copied properly"
+				lecho_err "Something went wrong!! Perhaps files were not copied properly"
 			fi
 		else
-			lecho "WARNING! Could not create backup destination directory"
+			lecho_err "WARNING! Could not create backup destination directory"
 		fi
 
 		empty_pause
@@ -2701,7 +2707,7 @@ backup_rpro()
 
 upgrade()
 {
-	lecho "Not implemented"
+	lecho_err "Not implemented"
 }
 
 
@@ -2711,7 +2717,7 @@ upgrade()
 ## PRIVATE ###
 upgrade_clean()
 {
-	lecho "Not implemented"
+	lecho_err "Not implemented"
 }
 
 
@@ -2736,14 +2742,14 @@ check_license()
 	check_current_rpro 1
 	if [[ $rpro_exists -eq 1 ]]; then
 
-		lic_file=$rpro_path/LICENSE.KEY
+		local lic_file=$rpro_path/LICENSE.KEY
 
 		write_log "Checking license"
 
 		if [ ! -f $lic_file ]; then
 	  		lecho "No license file found!. Please install a license."
 		else
-			value=`cat $lic_file`
+			local value=`cat $lic_file`
 			echo "Current license : $value"
 			write_log "license found!"
 		fi
@@ -2769,8 +2775,8 @@ set_update_license()
 	check_current_rpro 1
 	if [[ $rpro_exists -eq 1 ]]; then
 
-		lic_file="$rpro_path/LICENSE.KEY"
-		lic_new=1
+		local lic_file="$rpro_path/LICENSE.KEY"
+		local lic_new=1
 
 		if [ ! -f $lic_file ]; then
 	  		echo "Installing license code : Please enter new license code and press [ Enter ]."
@@ -2793,7 +2799,7 @@ set_update_license()
 
 		
 
-		license_code=$(echo $license_code | tr '[a-z]' '[A-Z]')
+		local license_code=$(echo $license_code | tr '[a-z]' '[A-Z]')
 		write_log "Writing license code to file $license_code"
 		printf $license_code > $lic_file;
 
@@ -2836,7 +2842,7 @@ licence_menu()
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 	echo -e "\e[44m ----------- MANAGE LICENSE ------------- \e[m"
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	echo "1. ADD / UPDATE LICENSE"
+	echo "1. ADD OR UPDATE LICENSE"
 	echo "2. VIEW LICENSE"
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "3. BACK TO MAIN MENU"
@@ -3121,7 +3127,7 @@ load_configuration()
 detect_system()
 {
 
-	ARCH=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
+	local ARCH=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 
 	if [ -f /etc/lsb-release ]; then
 	    . /etc/lsb-release
