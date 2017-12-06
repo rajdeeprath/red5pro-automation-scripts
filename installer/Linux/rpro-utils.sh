@@ -3,44 +3,37 @@
 ## --
 
 # Configuration file
-CONFIGURATION_FILE=conf.ini
+RPRO_CONFIGURATION_FILE=conf.ini
 
 # DEFAULT_RPRO_PATH=/usr/local/red5pro
 # MIN_JAVA_VERSION="1.8"
-LOGGING=true
-LOG_FILE_NAME=rpro_installer.log
-LOG_FILE=$PWD/$LOG_FILE_NAME
+RPRO_LOGGING=true
+RPRO_LOG_FILE_NAME=rpro_installer.log
+RPRO_LOG_FILE=$PWD/$RPRO_LOG_FILE_NAME
 
-OS_TYPE=
+RPRO_OS_TYPE=
 OS_DEB="DEBIAN"
 OS_RHL="REDHAT"
  
-SERVICE_LOCATION_V1=/etc/init.d
-SERVICE_NAME_V1=red5pro 
-
-
-SERVICE_LOCATION_V2=/lib/systemd/system
-SERVICE_NAME_V2=red5pro.service
-
-
-SERVICE_LOCATION=
-SERVICE_NAME=
+RPRO_SERVICE_LOCATION_V1=/etc/init.d
+RPRO_SERVICE_NAME_V1=red5pro 
+RPRO_SERVICE_LOCATION_V2=/lib/systemd/system
+RPRO_SERVICE_NAME_V2=red5pro.service
+RPRO_SERVICE_LOCATION=
+RPRO_SERVICE_NAME=
 
 # init.d(1) vs modern jsvc(2)
-SERVICE_VERSION=2
+RPRO_SERVICE_VERSION=2
 
-RED5SH=red5.sh
-SERVICE_INSTALLER=/usr/sbin/update-rc.d
-IS_64_BIT=0
-OS_NAME=
-OS_VERSION=
-MODE=0
+RPRO_RED5SH=red5.sh
+RPRO_SERVICE_INSTALLER=/usr/sbin/update-rc.d
+RPRO_IS_64_BIT=0
+RPRO_OS_NAME=
+RPRO_OS_VERSION=
+RPRO_MODE=0
 
 PID=/var/run/red5pro.pid
-
-
 JAVA_JRE_DOWNLOAD_URL="http://download.oracle.com/otn-pub/java/jdk/8u102-b14/"
-
 JAVA_32_FILENAME="jre-8u102-linux-i586.rpm"
 JAVA_64_FILENAME="jre-8u102-linux-x64.rpm"
 
@@ -78,8 +71,8 @@ write_log()
 	if [ $# -eq 0 ]; then
 		return
 	else
-		if $LOGGING; then			
-			logger -s $1 2>> $LOG_FILE
+		if $RPRO_LOGGING; then			
+			logger -s $1 2>> $RPRO_LOG_FILE
 		fi
 	fi
 }
@@ -94,8 +87,8 @@ lecho()
 	else
 		echo $1
 
-		if $LOGGING; then
-			logger -s $1 2>> $LOG_FILE
+		if $RPRO_LOGGING; then
+			logger -s $1 2>> $RPRO_LOG_FILE
 		fi
 	fi
 }
@@ -107,11 +100,11 @@ lecho_err()
 	if [ $# -eq 0 ]; then
 		return
 	else
-	# Red in Yellow
+		# Red in Yellow
 		echo -e "\e[41m $1\e[m"
 
-		if $LOGGING; then
-			logger -s $1 2>> $LOG_FILE
+		if $RPRO_LOGGING; then
+			logger -s $1 2>> $RPRO_LOG_FILE
 		fi
 	fi
 }
@@ -124,14 +117,14 @@ lecho_err()
 
 clear_log()
 {
-	> $LOG_FILE
+	> $RPRO_LOG_FILE
 }
 
 
 
 delete_log()
 {
-	rm $LOG_FILE
+	rm $RPRO_LOG_FILE
 }
 
 
@@ -150,7 +143,7 @@ cls()
 
 refresh()
 {
-	if [ "$MODE" -eq  1 ]; then
+	if [ "$RPRO_MODE" -eq  1 ]; then
  	show_utility_menu
 	else
  	show_simple_menu
@@ -166,7 +159,7 @@ pause()
 	read -r -p 'Press any [ Enter ] key to continue...' key
 
 
-	if [ "$MODE" -eq  1 ]; then
+	if [ "$RPRO_MODE" -eq  1 ]; then
  	show_utility_menu
 	else
  	show_simple_menu
@@ -373,7 +366,7 @@ install_java()
 install_java_deb()
 {
 	lecho "Installing Java for Debian";
-	apt-get install -y default-jre
+	sudo apt-get install -y default-jre
 
 }
 
@@ -383,7 +376,7 @@ install_java_deb()
 install_java_rhl()
 {
 	lecho "Installing Java for CentOs";
-	yum -y install java
+	sudo yum -y install java
 }
 
 
@@ -407,7 +400,7 @@ install_jsvc()
 install_jsvc_deb()
 {
 	write_log "Installing jsvc on debian"
-	apt-get install -y jsvc
+	sudo apt-get install -y jsvc
 
 	install_jsvc="$(which jsvc)";
 	lecho "jsvc installed at $install_jsvc"
@@ -419,7 +412,7 @@ install_jsvc_deb()
 install_jsvc_rhl()
 {
 	write_log "Installing jsvc on rhl"
-	yum -y install jsvc
+	sudo yum -y install jsvc
 
 	install_jsvc="$(which jsvc)";
 	lecho "jsvc installed at $install_jsvc"
@@ -447,8 +440,7 @@ install_unzip_deb()
 {
 	write_log "Installing unzip on debian"
 
-	apt-get update
-	apt-get install -y unzip
+	sudo apt-get install -y unzip
 
 	install_unzip="$(which unzip)";
 	lecho "Unzip installed at $install_unzip"
@@ -462,7 +454,7 @@ install_unzip_rhl()
 	write_log "Installing unzip on rhle"
 
 	# yup update
-	yum -y install unzip
+	sudo yum -y install unzip
 
 	install_unzip="$(which unzip)";
 	lecho "Unzip installed at $install_unzip"
@@ -518,7 +510,7 @@ install_git_deb()
 {
 	write_log "Installing git on debian"
 
-	apt-get install -y git
+	sudo apt-get install -y git
 
 	install_git="$(which git)";
 	lecho "git installed at $install_git"
@@ -529,7 +521,7 @@ install_git_rhl()
 {
 	write_log "Installing git on rhle"
 
-	yum -y install git
+	sudo yum -y install git
 
 	install_git="$(which git)";
 	lecho "git installed at $install_git"
@@ -541,7 +533,7 @@ install_wget_deb()
 {
 	write_log "Installing wget on debian"
 
-	apt-get install -y wget
+	sudo apt-get install -y wget
 
 	install_wget="$(which wget)";
 	lecho "wget installed at $install_wget"
@@ -555,7 +547,7 @@ install_wget_rhl()
 	write_log "Installing wget on rhle"
 
 	# yup update
-	yum -y install wget
+	sudo yum -y install wget
 
 	install_wget="$(which wget)";
 	lecho "wget installed at $install_wget"
@@ -569,7 +561,7 @@ install_bc_deb()
 {
 	write_log "Installing bc on debian"
 
-	apt-get install -y bc
+	sudo apt-get install -y bc
 
 	install_bc="$(which bc)";
 	lecho "bc installed at $install_bc"
@@ -583,7 +575,7 @@ install_bc_rhl()
 	write_log "Installing bc on rhle"
 
 	# yup update
-	yum -y install bc
+	sudo yum -y install bc
 
 	install_bc="$(which bc)";
 	lecho "bc installed at $install_bc"
@@ -688,12 +680,11 @@ rpro_ssl_installer()
 
 	sleep 2
  
-	./letsencrypt-auto --help 2>&1 | tee -a "$LOG_FILE"
+	./letsencrypt-auto --help 2>&1 | tee -a "$RPRO_LOG_FILE"
 
 	
 	# Get Certificate
 	ssl_cert_request_form	
-
 
 
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
@@ -1015,6 +1006,68 @@ simple_config_ssl_properties()
 
 
 
+remove_letsencrypt_ssl_config_domain()
+{
+	read_ssl_config_domain_properties
+
+	if [ -d "/etc/letsencrypt/live/$letsencrypt_ssl_cert_domain_value" ]; then
+		sudo rm -rf "/etc/letsencrypt/live/$letsencrypt_ssl_cert_domain_value"
+		lecho "SSL Certificate information for $letsencrypt_ssl_cert_domain_value was removed"
+		sleep 2
+	fi
+	
+}
+
+
+
+read_ssl_config_domain_properties()
+{
+	red5pro_conf_properties="$DEFAULT_RPRO_PATH/conf/red5.properties"	
+	lecho "Reading SSL config from $red5pro_conf_properties.."
+
+	if [ ! -f "$red5pro_conf_properties" ]; then
+	    lecho_err "Error : File  $red5pro_conf_properties not found!"
+	    pause
+	fi
+
+	letsencrypt_rtmps_keystorefile_pattern="rtmps.keystorefile*"
+	letsencrypt_rtmps_keystorefile_pattern_replace=""
+	letsencrypt_rtmps_keystorefile_value=
+	letsencrypt_ssl_cert_domain_value=
+
+	while IFS= read line
+	do
+		case "$line" in			
+		$letsencrypt_rtmps_keystorefile_pattern) 
+			letsencrypt_rtmps_keystorefile_value=$(echo $line | sed -e "s/rtmps.keystorefile=/${letsencrypt_rtmps_keystorefile_pattern_replace}/g")
+			break
+		;;
+		*) continue ;;
+		esac
+	
+	done <"$red5pro_conf_properties"
+
+	# Check if set
+	if [ -z ${letsencrypt_rtmps_keystorefile_value+x} ]; then
+		false
+	else 
+
+		if [[ ${letsencrypt_rtmps_keystorefile_value} == *"letsencrypt"* ]];then
+		   lecho "Letsencrypt ssl cert $letsencrypt_rtmps_keystorefile_value found"
+
+		   # /etc/letsencrypt/live/ssltester.flashvisions.com/keystore.jks found
+		   letsencrypt_ssl_cert_domain_value=$(echo $letsencrypt_rtmps_keystorefile_value | sed -e "s|/etc/letsencrypt/live/||g" -e "s|/keystore.jks||g")
+
+		    true
+		else
+		    false
+		fi
+	fi
+	
+}
+
+
+
 smart_config_ssl_properties()
 {
 	lecho "Configuring $red5pro_conf_properties.."
@@ -1109,7 +1162,7 @@ modify_jvm_memory()
 
 	if [[ $rpro_exists -eq 1 ]]; then
 
-		red5_sh_file=$rpro_path/$RED5SH
+		red5_sh_file=$rpro_path/$RPRO_RED5SH
 
 		if [ ! -f $red5_sh_file ]; then
 	  		lecho_err "CRITICAL ERROR! $red5_sh_file was not found!"
@@ -1146,28 +1199,38 @@ eval_memory_to_allocate()
 	alloc_phymem=$(awk "BEGIN { pc=${phymem}*${RED5PRO_MEMORY_PCT}/100; print int(pc);}") # calculate percentage to allocate
 	alloc_phymem=$(bc <<< "scale=1;$alloc_phymem/1024") # Mb to Gb
 	alloc_phymem_rounded=$(printf "%.0f" $alloc_phymem) # Round off
+	low_mem_message=
+	
 
 	if [[ "$alloc_phymem_rounded" -lt 2 ]]; then
-		lecho "SEVERE!: System memory is insufficient for running this software.Installation cannot continue !!"
-		read -r -p "Press any key to exit  " low_mem_response
-		exit
+		low_mem_message="SEVERE!: System memory is insufficient for running this software. A minimum of 2GB is required for Red5 Pro"
 	else 
 		if [[ "$alloc_phymem_rounded" -eq 2 ]]; then	
 
-			if [ $# -eq 0 ];  then
-				read -r -p "WARNING!: System memory is is barely enough for running this software.Do you wish to continue ? [y/N] " low_mem_response
-				case $low_mem_response in
-				[yY][eE][sS]|[yY]) 
-				;;
-				*)
-				sleep 1
-				exit
-				;;
-				esac
-			fi
-			
+			low_mem_message="WARNING!: System memory is is barely enough for running this software"
 		fi
 	fi
+
+
+
+	if [ -z "$low_mem_message" ]; then
+
+		write_log "Memory $alloc_phymem_rounded GB.Check Ok!"
+	else
+
+		if [ $# -eq 0 ];  then		
+			read -r -p "$low_mem_message.Do you wish to continue ? [y/N] " low_mem_response
+			case $low_mem_response in
+			[yY][eE][sS]|[yY]) 
+				write_log "Memory $alloc_phymem_rounded GB (not ok) but user wishes to continue installation"
+			;;
+			*)
+			sleep 1
+			exit
+			;;
+			esac
+		fi	
+	fi	
 
 }
 
@@ -1240,7 +1303,7 @@ red5pro_com_login_form()
 		wget --server-response --save-cookies cookies.txt --keep-session-cookies --post-data="email=$rpro_email&password=$rpro_passcode" "https://account.red5pro.com/login" 2>$dir/wsession.txt
 		wget_status=$(< $dir/wsession.txt)
 
-		echo "$(cat $LOG_FILE)$wget_status" > $LOG_FILE	
+		echo "$(cat $RPRO_LOG_FILE)$wget_status" > $RPRO_LOG_FILE	
 
 		# Check http code
 		wget_status_ok=0
@@ -1449,7 +1512,7 @@ register_rpro_as_service()
 
 		write_log "Registering service for Red5 Pro"
 
-		if [ -f "$SERVICE_LOCATION/$SERVICE_NAME" ]; then
+		if [ -f "$RPRO_SERVICE_LOCATION/$RPRO_SERVICE_NAME" ]; then
 		lecho "Service already exists. Do you wish to re-install ?" 
 		read -r -p "Are you sure? [y/N] " response
 
@@ -1483,7 +1546,7 @@ unregister_rpro_as_service()
 
 	if [ "$rpro_exists" -eq 1 ]; then
 
-		if [ ! -f "$SERVICE_LOCATION/$SERVICE_NAME" ]; then
+		if [ ! -f "$RPRO_SERVICE_LOCATION/$RPRO_SERVICE_NAME" ]; then
 			lecho "Service does not exists. Nothing to remove" 
 		else
 			unregister_rpro_service
@@ -1587,7 +1650,7 @@ install_rpro_zip()
 		unregister_rpro_service
 
 		# check remove old files
-		rm -rf $DEFAULT_RPRO_PATH
+		sudo rm -rf $DEFAULT_RPRO_PATH
 
 		;;
 		*)
@@ -1623,10 +1686,10 @@ install_rpro_zip()
 	if [[ $# -gt 1 ]]; then
 
 		if [ ! -d "$rpro_loc" ]; then
-		  mkdir -p $rpro_loc
+		  sudo mkdir -p $rpro_loc
 		fi
 
-		mv -v $unzip_dest/* $rpro_loc
+		sudo mv -v $unzip_dest/* $rpro_loc
 	else
 		# Move to actual install location 
 		rpro_loc=$DEFAULT_RPRO_PATH
@@ -1641,11 +1704,11 @@ install_rpro_zip()
 
 	sleep 1
 
-	chmod -R 755 $rpro_loc	
+	sudo chmod -R 755 $rpro_loc	
 
-	chmod -R ugo+w $rpro_loc
+	sudo chmod -R ugo+w $rpro_loc
 
-	chmod +x $rpro_loc/*.sh
+	sudo chmod +x $rpro_loc/*.sh
 
 
 	# set path
@@ -1660,9 +1723,9 @@ install_rpro_zip()
 		sleep 1
 
 		# Delete unzipped content
-		rm -rf $unzip_dest
+		sudo rm -rf $unzip_dest
 		# Delete zip
-		rm -rf $rpro_zip_path
+		sudo rm -rf $rpro_zip_path
 	fi
 
 
@@ -1727,7 +1790,7 @@ install_rpro_zip()
 # Public
 register_rpro_service()
 {
-	if [ "$SERVICE_VERSION" -eq "1" ]; then
+	if [ "$RPRO_SERVICE_VERSION" -eq "1" ]; then
 	   register_rpro_service_v1
 	else
 	   register_rpro_service_v2
@@ -1740,7 +1803,7 @@ register_rpro_service()
 unregister_rpro_service()
 {
 	
-	if [ "$SERVICE_VERSION" -eq "1" ]; then
+	if [ "$RPRO_SERVICE_VERSION" -eq "1" ]; then
 	   unregister_rpro_service_v1
 	else
 	   unregister_rpro_service_v2
@@ -1850,12 +1913,12 @@ esac"
 # Private
 register_rpro_service_deb()
 {
-	lecho "Registering service \"$SERVICE_NAME\""
+	lecho "Registering service \"$RPRO_SERVICE_NAME\""
 	sleep 1
 
 	/usr/sbin/update-rc.d red5pro defaults
 
-	lecho "Enabling service \"$SERVICE_NAME\""
+	lecho "Enabling service \"$RPRO_SERVICE_NAME\""
 	sleep 1
 
 	/usr/sbin/update-rc.d red5pro enable
@@ -1866,13 +1929,13 @@ register_rpro_service_deb()
 # Private
 register_rpro_service_rhl()
 {
-	lecho "Registering service \"$SERVICE_NAME\""
+	lecho "Registering service \"$RPRO_SERVICE_NAME\""
 	sleep 1
 
 	systemctl daemon-reload
 	
 
-	lecho "Enabling service \"$SERVICE_NAME\""
+	lecho "Enabling service \"$RPRO_SERVICE_NAME\""
 	sleep 1
 
 	systemctl enable red5pro.service
@@ -1907,7 +1970,7 @@ unregister_rpro_service_v1()
 		unregister_rpro_service_rhl
 		fi
 
-		rm -rf /etc/init.d/red5pro
+		sudo rm -rf /etc/init.d/red5pro
 
 		lecho "Service removed successfully"
 		rpro_service_remove_success=0
@@ -1923,15 +1986,15 @@ unregister_rpro_service_v1()
 # Private
 unregister_rpro_service_deb()
 {
-	lecho "Disabling service \"$SERVICE_NAME\""
+	lecho "Disabling service \"$RPRO_SERVICE_NAME\""
 	sleep 1
 
-	/usr/sbin/update-rc.d $SERVICE_NAME disable
+	/usr/sbin/update-rc.d $RPRO_SERVICE_NAME disable
 
-	lecho "Removing service \"$SERVICE_NAME\""
+	lecho "Removing service \"$RPRO_SERVICE_NAME\""
 	sleep 1
 
-	/usr/sbin/update-rc.d $SERVICE_NAME remove
+	/usr/sbin/update-rc.d $RPRO_SERVICE_NAME remove
 }
 
 
@@ -1940,13 +2003,13 @@ unregister_rpro_service_deb()
 # Private
 unregister_rpro_service_rhl()
 {
-	lecho "Disabling service \"$SERVICE_NAME\""
+	lecho "Disabling service \"$RPRO_SERVICE_NAME\""
 	sleep 1
 
 	systemctl disable red5pro.service
 
 
-	lecho "Removing service \"$SERVICE_NAME\""
+	lecho "Removing service \"$RPRO_SERVICE_NAME\""
 	sleep 1
 }
 
@@ -1970,7 +2033,7 @@ stop_red5pro_service_v1()
 # Private
 restart_red5pro_service_v1()
 {
-	lecho "This feature is not supported in V1 service installer!"
+	lecho "This feature is not supported in V1 service installer!. To 'restart' please stop the service and then start it again."
 }
 
 
@@ -2074,13 +2137,13 @@ WantedBy=multi-user.target
 register_rpro_service_generic_v2()
 {
 
-	lecho "Registering service \"$SERVICE_NAME\""
+	lecho "Registering service \"$RPRO_SERVICE_NAME\""
 	sleep 1	
 
 	# Reload daemon 
 	systemctl daemon-reload
 
-	lecho "Enabling service \"$SERVICE_NAME\""
+	lecho "Enabling service \"$RPRO_SERVICE_NAME\""
 
 	# enable service
 	systemctl enable red5pro.service
@@ -2091,13 +2154,13 @@ register_rpro_service_generic_v2()
 # Private
 unregister_rpro_service_generic_v2()
 {
-	lecho "Unregistering service \"$SERVICE_NAME\""
+	lecho "Unregistering service \"$RPRO_SERVICE_NAME\""
 	sleep 1	
 
 	# Reload daemon 
 	systemctl daemon-reload
 
-	lecho "Disabling service \"$SERVICE_NAME\""
+	lecho "Disabling service \"$RPRO_SERVICE_NAME\""
 
 	# disaable service
 	systemctl disable red5pro.service
@@ -2123,7 +2186,7 @@ unregister_rpro_service_v2()
 		unregister_rpro_service_generic_v2
 
 		# remove service
-		rm -f /lib/systemd/system/red5pro.service
+		sudo rm -f /lib/systemd/system/red5pro.service
 
 		lecho "Service removed successfully"
 		rpro_service_remove_success=0
@@ -2172,17 +2235,17 @@ start_red5pro_service()
 
 	if [ "$rpro_exists" -eq 1 ]; then
 
-		if [ ! -f "$SERVICE_LOCATION/$SERVICE_NAME" ];	then
+		if [ ! -f "$RPRO_SERVICE_LOCATION/$RPRO_SERVICE_NAME" ];	then
 			lecho "It seems Red5 Pro service was not installed. Please register Red5 Pro service from the menu for best results."
 			lecho " Attempting to start Red5 Pro using \"red5.sh\""
 		
 			cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5.sh > /dev/null 2>&1 &
 
 		else
-			lecho "Red5 Pro service was found at $SERVICE_LOCATION/$SERVICE_NAME"
+			lecho "Red5 Pro service was found at $RPRO_SERVICE_LOCATION/$RPRO_SERVICE_NAME"
 			lecho " Attempting to start service"
 
-			if [ "$SERVICE_VERSION" -eq "1" ]; then
+			if [ "$RPRO_SERVICE_VERSION" -eq "1" ]; then
 				
 				if !(is_running_red5pro_service 1); then
 					start_red5pro_service_v1
@@ -2223,16 +2286,16 @@ stop_red5pro_service()
 	if [ "$rpro_exists" -eq 1 ]; then	
 
 
-		if [ ! -f "$SERVICE_LOCATION/$SERVICE_NAME" ];	then
+		if [ ! -f "$RPRO_SERVICE_LOCATION/$RPRO_SERVICE_NAME" ];	then
 			lecho "It seems Red5 Pro service was not installed. Please register Red5 Pro service from the menu for best results."
 			lecho " Attempting to stop using \"red5-shutdown.sh\""
 
 			cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh force > /dev/null 2>&1 &	
 		else
-			lecho "Red5 Pro service was found at $SERVICE_LOCATION/$SERVICE_NAME."
+			lecho "Red5 Pro service was found at $RPRO_SERVICE_LOCATION/$RPRO_SERVICE_NAME."
 			lecho "Attempting to stop Red5 Pro service"
 
-			if [ "$SERVICE_VERSION" -eq "1" ]; then	
+			if [ "$RPRO_SERVICE_VERSION" -eq "1" ]; then	
 
 				if is_running_red5pro_service 1; then
 					stop_red5pro_service_v1
@@ -2269,13 +2332,13 @@ restart_red5pro_service()
 
 	if [ "$rpro_exists" -eq 1 ]; then
 
-		if [ ! -f "$SERVICE_LOCATION/$SERVICE_NAME" ];	then
+		if [ ! -f "$RPRO_SERVICE_LOCATION/$RPRO_SERVICE_NAME" ];	then
 			lecho "It seems Red5 Pro service was not installed. Please register Red5 Pro service from the menu for to activate this feature."
 		else
-			lecho "Red5 Pro service was found at $SERVICE_LOCATION/$SERVICE_NAME."
+			lecho "Red5 Pro service was found at $RPRO_SERVICE_LOCATION/$RPRO_SERVICE_NAME."
 			lecho "Attempting to restart Red5 Pro service"
 
-			if [ "$SERVICE_VERSION" -eq "1" ]; then
+			if [ "$RPRO_SERVICE_VERSION" -eq "1" ]; then
 				restart_red5pro_service_v1
 			else
 				restart_red5pro_service_v2
@@ -2327,11 +2390,11 @@ is_running_red5pro_service()
 
 	if [ "$rpro_exists" -eq 1 ]; then
 
-		if [ ! -f "$SERVICE_LOCATION/$SERVICE_NAME" ];	then
+		if [ ! -f "$RPRO_SERVICE_LOCATION/$RPRO_SERVICE_NAME" ];	then
 			lecho "It seems Red5 Pro service was not installed. Please register Red5 Pro service from the menu for to activate this feature."
 		else			
 
-			if [ "$SERVICE_VERSION" -eq "1" ]; then
+			if [ "$RPRO_SERVICE_VERSION" -eq "1" ]; then
 				if is_running_red5pro_service_v1; then
 					rpro_running=1
 				fi
@@ -2379,9 +2442,12 @@ remove_rpro_installation()
 		[yY][eE][sS]|[yY]) 
 		# remove rpro service
 		unregister_rpro_service
+
 		# check remove folder
-		rm -rf $DEFAULT_RPRO_PATH
+		sudo rm -rf $DEFAULT_RPRO_PATH
+
 		unset RED5_HOME
+
 		if [ ! -d "$DEFAULT_RPRO_PATH" ]; then
 			lecho "Red5 installation was removed"
 		fi
@@ -2695,7 +2761,7 @@ license_menu_read_options(){
 		1) set_update_license 0 ;;
 		2) check_license 0 ;;
 		3) 
-		if [ $MODE -eq  1]; then 
+		if [ $RPRO_MODE -eq  1]; then 
 		show_utility_menu 
 		else 
 		show_simple_menu 
@@ -2852,7 +2918,7 @@ simple_menu_read_options(){
 load_configuration()
 {
 
-	if [ ! -f $CONFIGURATION_FILE ]; then
+	if [ ! -f $RPRO_CONFIGURATION_FILE ]; then
 
 		echo -e "\e[41m CRITICAL ERROR!! - Configuration file not found!\e[m"
 		echo -e "\e[41m Exiting...\e[m"
@@ -2861,7 +2927,7 @@ load_configuration()
 
 
 	# Load config values
-	source "$CONFIGURATION_FILE"
+	source "$RPRO_CONFIGURATION_FILE"
 
 
 	JAVA_32_BIT="$JAVA_JRE_DOWNLOAD_URL/$JAVA_32_FILENAME"
@@ -2896,29 +2962,29 @@ detect_system()
 
 	if [ -f /etc/lsb-release ]; then
 	    . /etc/lsb-release
-	    OS_NAME=$DISTRIB_ID
-	    OS_VERSION=$DISTRIB_RELEASE
+	    RPRO_OS_NAME=$DISTRIB_ID
+	    RPRO_OS_VERSION=$DISTRIB_RELEASE
 	elif [ -f /etc/debian_version ]; then
-	    OS_NAME=Debian  # XXX or Ubuntu??
-	    OS_VERSION=$(cat /etc/debian_version)
+	    RPRO_OS_NAME=Debian  # XXX or Ubuntu??
+	    RPRO_OS_VERSION=$(cat /etc/debian_version)
 	elif [ -f /etc/redhat-release ]; then
 	    # TODO add code for Red Hat and CentOS here
-	    OS_VERSION=$(rpm -q --qf "%{VERSION}" $(rpm -q --whatprovides redhat-release))
-	    OS_NAME=$(rpm -q --qf "%{RELEASE}" $(rpm -q --whatprovides redhat-release))
+	    RPRO_OS_VERSION=$(rpm -q --qf "%{VERSION}" $(rpm -q --whatprovides redhat-release))
+	    RPRO_OS_NAME=$(rpm -q --qf "%{RELEASE}" $(rpm -q --whatprovides redhat-release))
 	else
-	    OS_NAME=$(uname -s)
-	    OS_VERSION=$(uname -r)
+	    RPRO_OS_NAME=$(uname -s)
+	    RPRO_OS_VERSION=$(uname -r)
 	fi
 
 	case $(uname -m) in
 	x86_64)
 	    ARCH=x64  # AMD64 or Intel64 or whatever
-	    IS_64_BIT=1
+	    RPRO_IS_64_BIT=1
 	    os_bits="64 Bit"
 	    ;;
 	i*86)
 	    ARCH=x86  # IA32 or Intel32 or whatever
-	    IS_64_BIT=0
+	    RPRO_IS_64_BIT=0
 	    os_bits="32 Bit"
 	    ;;
 	*)
@@ -2926,11 +2992,11 @@ detect_system()
 	    ;;
 	esac
 
-	echo -e "* Distribution: \e[36m$OS_NAME\e[m"
-	write_log "Distribution: $OS_NAME"
+	echo -e "* Distribution: \e[36m$RPRO_OS_NAME\e[m"
+	write_log "Distribution: $RPRO_OS_NAME"
 
-	echo -e "* Version: \e[36m$OS_VERSION\e[m"
-	write_log "Version: $OS_VERSION"
+	echo -e "* Version: \e[36m$RPRO_OS_VERSION\e[m"
+	write_log "Version: $RPRO_OS_VERSION"
 
 	echo -e "* Kernel: \e[36m$os_bits\e[m"
 	write_log "Kernel: $os_bits"
@@ -2955,26 +3021,26 @@ detect_system()
 	write_log "Downloads directory: $RED5PRO_DEFAULT_DOWNLOAD_FOLDER"
 
 	
-	if [[ $OS_NAME == *"Ubuntu"* ]]; then
-	OS_TYPE=$OS_DEB
+	if [[ $RPRO_OS_NAME == *"Ubuntu"* ]]; then
+	RPRO_OS_TYPE=$OS_DEB
 	else
-	OS_TYPE=$OS_RHL
+	RPRO_OS_TYPE=$OS_RHL
 	fi
 
 
 	# Service installer mode selection
-	if [ "$SERVICE_VERSION" -eq "1" ]; then
-	SERVICE_LOCATION=$SERVICE_LOCATION_V1
-	SERVICE_NAME=$SERVICE_NAME_V1
+	if [ "$RPRO_SERVICE_VERSION" -eq "1" ]; then
+	RPRO_SERVICE_LOCATION=$RPRO_SERVICE_LOCATION_V1
+	RPRO_SERVICE_NAME=$RPRO_SERVICE_NAME_V1
 	echo -e "* Service Deployment : \e[36mClassic\e[m"
 	else
-	SERVICE_LOCATION=$SERVICE_LOCATION_V2
-	SERVICE_NAME=$SERVICE_NAME_V2
+	RPRO_SERVICE_LOCATION=$RPRO_SERVICE_LOCATION_V2
+	RPRO_SERVICE_NAME=$RPRO_SERVICE_NAME_V2
 	echo -e "* Service Deployment : \e[36mModern\e[m"
 	fi
 
 
-	write_log "OS TYPE $OS_TYPE"
+	write_log "OS TYPE $RPRO_OS_TYPE"
 }
 
 
@@ -2983,7 +3049,7 @@ simple_usage_mode()
 {
 	write_log "Basic mode selected"
 
-	MODE=0
+	RPRO_MODE=0
 
 	simple_menu
 	simple_menu_read_options
@@ -2996,7 +3062,7 @@ utility_usage_mode()
 {
 	write_log "Utility mode selected"
 
-	MODE=1
+	RPRO_MODE=1
 	
 	advance_menu
 	advance_menu_read_options
@@ -3118,14 +3184,14 @@ prerequisites_update()
 
 prerequisites_update_deb()
 {
-	apt-get update
+	sudo apt-get update
 }
 
 
 
 prerequisites_update_rhl()
 {
-	yum -y update
+	sudo yum -y update
 }
 
 
@@ -3236,7 +3302,7 @@ postrequisites_deb()
 {
 	write_log "Installing additional dependencies for DEBIAN"
 
-	apt-get install -y libva1 libva-drm1 libva-x11-1 libvdpau1
+	sudo apt-get install -y libva1 libva-drm1 libva-x11-1 libvdpau1
 }
 
 
@@ -3282,7 +3348,7 @@ isinstalled_deb()
 # Public
 isDebian()
 {
-	if [ "$OS_TYPE" == "$OS_DEB" ]; then
+	if [ "$RPRO_OS_TYPE" == "$OS_DEB" ]; then
 	true
 	else
 	false
@@ -3332,7 +3398,6 @@ repo_has_required_java_rhl()
 
 
 
-
 #################################################################################################
 
 # RED => echo -e "\e[31m Home directory\e[m"
@@ -3347,6 +3412,7 @@ load_configuration
 # Start application
 write_log "====================================="
 write_log "	NEW INSTALLER SESSION	
+
 	"
 main
 
