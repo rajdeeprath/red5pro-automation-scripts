@@ -629,6 +629,49 @@ letsencrypt_download()
 }
 
 
+show_has_ssl_cert_menu()
+{
+	has_ssl_cert_menu
+	has_ssl_cert_menu_read_options
+}
+
+
+has_ssl_cert_menu()
+{
+	cls
+
+	lecho "I have detected an existing letsEncrypt SSL certificate for this domain. Please an appropriate action to continue!"
+
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+	echo -e "\e[44m EXISTING SSL CERT DETECTED! \e[m"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+	echo "1. --- DELETE LETSENCRYPT DIRECTORY (ALL CERTIFICATES) AND TRY AGAIN"
+	echo "2. --- ATTEMPT TO USE THE EXISTING CERTIFICATE			  "	
+	echo "3. --- Exit					 		  "
+	echo "                             		 			  "
+
+}
+
+
+
+
+
+has_ssl_cert_menu_read_options(){
+
+	reuse_existing_ssl_cert=0
+
+	local choice
+	read -p "Enter choice [ 1 - 5 | 0 to exit]] " choice
+	case $choice in
+		1) sudo rm -rf /etc/letsencrypt ;;
+		2) reuse_existing_ssl_cert=1 ;;
+		3) pause ;;
+		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_has_ssl_cert_menu ;;
+	esac
+}
+
+
+
 rpro_ssl_installer()
 {
 	rpro_ssl_installation_success=0
@@ -687,49 +730,15 @@ rpro_ssl_installer()
 	ssl_cert_request_form	
 
 
-	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	lecho "Requesting SSL certificate" 
-	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-
-	sleep 2
-
-
-	letsencrypt_cert_gen_success=0
-	rpro_ssl_response=$(./letsencrypt-auto certonly --standalone --email "$rpro_ssl_reg_email" --agree-tos -d "$rpro_ssl_reg_domain" 2>&1 | tee /dev/tty)
-
-	lecho "$rpro_ssl_response" | grep 'Congratulations! Your certificate and chain have been saved' &> /dev/null
-	if [ $? == 0 ]; then
-	   	lecho "Cert successfully generated!"
-		letsencrypt_cert_gen_success=1
-	else
-		lecho "$rpro_ssl_response" | grep 'You have an existing certificate that has exactly the same domains' &> /dev/null
-
-		if [ $? == 0 ]; then
-			letsencrypt_cert_gen_success=1
-		else			
-			lecho_err "SSL cert generation failed!"
-			read -r -p " -- Retry? [y/N] " try_login_response
-			case $try_login_response in
-			[yY][eE][sS]|[yY]) 
-			rpro_ssl_installer
-			;;
-			*)
-			letsencrypt_cert_gen_success=0
-			;;
-			esac
-		fi	
+	# detect if cert exists for the domain
+	rpro_old_ssl_domain_account="/etc/letsencrypt/live/$rpro_ssl_reg_domain"
+	if [ -d "$rpro_old_ssl_domain_account" ]; then
+		show_has_ssl_cert_menu
 	fi
 
 
-	# Recheck & exit
-	if [[ $letsencrypt_cert_gen_success -eq 0 ]]; then
-		lecho "SSL Certificate generation did not succeed. Please rectify any errors mentioned in the logging and try again!"
-		pause
-	fi
-	
 
-	
-	# Create Keystore
+	# Prepare Keystore stuff
 
 	rpro_ssl_fullchain="/etc/letsencrypt/live/$rpro_ssl_reg_domain/fullchain.pem"
 	rpro_ssl_privkey="/etc/letsencrypt/live/$rpro_ssl_reg_domain/privkey.pem"
@@ -737,51 +746,114 @@ rpro_ssl_installer()
 	rpro_ssl_keystore_jks="/etc/letsencrypt/live/$rpro_ssl_reg_domain/keystore.jks"
 	rpro_ssl_tomcat_cer="/etc/letsencrypt/live/$rpro_ssl_reg_domain/tomcat.cer"
 	rpro_ssl_trust_store="/etc/letsencrypt/live/$rpro_ssl_reg_domain/truststore.jks"
+
+	
+	# if has cert then use that
+	if [[ $reuse_existing_ssl_cert -eq 1 ]]; then
+
+		# Ask for SSL cert password
+		ssl_cert_passphrase_form
+
+
+	else
+
+		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+		lecho "Requesting SSL certificate" 
+		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+
+		sleep 2
+
+
+		letsencrypt_cert_gen_success=0
+		rpro_ssl_response=$(./letsencrypt-auto certonly --standalone --email "$rpro_ssl_reg_email" --agree-tos -d "$rpro_ssl_reg_domain" 2>&1 | tee /dev/tty)
+
+		lecho "$rpro_ssl_response" | grep 'Congratulations! Your certificate and chain have been saved' &> /dev/null
+		if [ $? == 0 ]; then
+		   	lecho "Cert successfully generated!"
+			letsencrypt_cert_gen_success=1
+		else
+			lecho "$rpro_ssl_response" | grep 'You have an existing certificate that has exactly the same domains' &> /dev/null
+
+			if [ $? == 0 ]; then
+				letsencrypt_cert_gen_success=1
+			else			
+				lecho_err "SSL cert generation failed!"
+				read -r -p " -- Retry? [y/N] " try_login_response
+				case $try_login_response in
+				[yY][eE][sS]|[yY]) 
+				rpro_ssl_installer
+				;;
+				*)
+				letsencrypt_cert_gen_success=0
+				;;
+				esac
+			fi	
+		fi
+
+
+		# Recheck & exit
+		if [[ $letsencrypt_cert_gen_success -eq 0 ]]; then
+			lecho "SSL Certificate generation did not succeed. Please rectify any errors mentioned in the logging and try again!"
+			pause
+		fi
 	
 
-	# Ask for keystore password here -> input
-	ssl_cert_passphrase_form
+	
+		# Create Keystore
+
+		#rpro_ssl_fullchain="/etc/letsencrypt/live/$rpro_ssl_reg_domain/fullchain.pem"
+		#rpro_ssl_privkey="/etc/letsencrypt/live/$rpro_ssl_reg_domain/privkey.pem"
+		#rpro_ssl_fullchain_and_key="/etc/letsencrypt/live/$rpro_ssl_reg_domain/fullchain_and_key.p12"
+		#rpro_ssl_keystore_jks="/etc/letsencrypt/live/$rpro_ssl_reg_domain/keystore.jks"
+		#rpro_ssl_tomcat_cer="/etc/letsencrypt/live/$rpro_ssl_reg_domain/tomcat.cer"
+		#rpro_ssl_trust_store="/etc/letsencrypt/live/$rpro_ssl_reg_domain/truststore.jks"
+	
+
+		# Ask for keystore password here -> input
+		ssl_cert_passphrase_form
 
 
-	openssl pkcs12 -export -in "$rpro_ssl_fullchain" -inkey "$rpro_ssl_privkey" -out "$rpro_ssl_fullchain_and_key" -password pass:"$rpro_keystore_cert_pass" -name tomcat
+		openssl pkcs12 -export -in "$rpro_ssl_fullchain" -inkey "$rpro_ssl_privkey" -out "$rpro_ssl_fullchain_and_key" -password pass:"$rpro_keystore_cert_pass" -name tomcat
 
 
-	keytool_response=$(keytool -importkeystore -deststorepass "$rpro_keystore_cert_pass" -destkeypass "$rpro_keystore_cert_pass" -destkeystore "$rpro_ssl_keystore_jks" -srckeystore "$rpro_ssl_fullchain_and_key" -srcstoretype PKCS12 -srcstorepass "$rpro_keystore_cert_pass" -alias tomcat)
+		keytool_response=$(keytool -importkeystore -deststorepass "$rpro_keystore_cert_pass" -destkeypass "$rpro_keystore_cert_pass" -destkeystore "$rpro_ssl_keystore_jks" -srckeystore "$rpro_ssl_fullchain_and_key" -srcstoretype PKCS12 -srcstorepass "$rpro_keystore_cert_pass" -alias tomcat)
 
-	# Check for keytool error
-	if [[ ${keytool_response} == *"keytool error"* ]];then
-	    printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	    lecho_err "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
-	    lecho_err "Error Details:"
-	    lecho_err "$keytool_response"
-	    pause
-	fi
-
-
-	keytool_response=$(keytool -export -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_keystore_jks" -storepass "$rpro_keystore_cert_pass" -noprompt)
+		# Check for keytool error
+		if [[ ${keytool_response} == *"keytool error"* ]];then
+		    printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+		    lecho_err "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
+		    lecho_err "Error Details:"
+		    lecho_err "$keytool_response"
+		    pause
+		fi
 
 
-	# Check for keytool error
-	if [[ ${keytool_response} == *"keytool error"* ]];then
-	    printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	    lecho_err "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
-	    lecho_err "Error Details:"
-	    lecho_err "$keytool_response"
-	    pause
-	fi
+		keytool_response=$(keytool -export -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_keystore_jks" -storepass "$rpro_keystore_cert_pass" -noprompt)
 
 
-	keytool_response=$(keytool -import -trustcacerts -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_trust_store" -storepass "$rpro_keystore_cert_pass" -noprompt)
+		# Check for keytool error
+		if [[ ${keytool_response} == *"keytool error"* ]];then
+		    printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+		    lecho_err "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
+		    lecho_err "Error Details:"
+		    lecho_err "$keytool_response"
+		    pause
+		fi
 
 
-	# Check for keytool error
-	if [[ ${keytool_response} == *"keytool error"* ]];then
-	    printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	    lecho_err "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
-	    lecho_err "Error Details:"
-	    lecho_err "$keytool_response"
-	    pause
-	fi
+		keytool_response=$(keytool -import -trustcacerts -alias tomcat -file "$rpro_ssl_tomcat_cer" -keystore "$rpro_ssl_trust_store" -storepass "$rpro_keystore_cert_pass" -noprompt)
+
+
+		# Check for keytool error
+		if [[ ${keytool_response} == *"keytool error"* ]];then
+		    printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+		    lecho_err "An error occurred while processing certificate.Please resolve the error(s) and try the SSL installer again."
+		    lecho_err "Error Details:"
+		    lecho_err "$keytool_response"
+		    pause
+		fi
+
+	fi	
 	
 
 	
