@@ -1859,7 +1859,7 @@ start() {
 }
 
 stop() {
-  cd \${RED5_HOME} && ./red5-shutdown.sh force > /dev/null 2>&1 &
+  cd \${RED5_HOME} && ./red5-shutdown.sh > /dev/null 2>&1 &
 }
 
 
@@ -1884,7 +1884,7 @@ esac"
 	lecho "Writing service script"
 	sleep 1
 
-	touch /etc/init.d/red5pro
+	sudo touch /etc/init.d/red5pro
 
 	# write script to file
 	echo "$service_script" > /etc/init.d/red5pro
@@ -1893,7 +1893,7 @@ esac"
 
 
 	# make service file executable
-	chmod 777 /etc/init.d/red5pro
+	sudo chmod 777 /etc/init.d/red5pro
 
 	if isDebian; then
 	register_rpro_service_deb	
@@ -2113,13 +2113,13 @@ WantedBy=multi-user.target
 	lecho "Writing service script"
 	sleep 1
 
-	touch /lib/systemd/system/red5pro.service
+	sudo touch /lib/systemd/system/red5pro.service
 
 	# write script to file
 	echo "$service_script" > /lib/systemd/system/red5pro.service
 
 	# make service file executable
-	chmod 644 /lib/systemd/system/red5pro.service
+	sudo chmod 644 /lib/systemd/system/red5pro.service
 
 	register_rpro_service_generic_v2
 
@@ -2238,8 +2238,12 @@ start_red5pro_service()
 		if [ ! -f "$RPRO_SERVICE_LOCATION/$RPRO_SERVICE_NAME" ];	then
 			lecho "It seems Red5 Pro service was not installed. Please register Red5 Pro service from the menu for best results."
 			lecho " Attempting to start Red5 Pro using \"red5.sh\""
-		
-			cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5.sh > /dev/null 2>&1 &
+
+			if !(is_running_red5pro_service_v1); then
+				cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5.sh > /dev/null 2>&1 &
+			else
+				lecho "Server is already running!" 
+			fi			
 
 		else
 			lecho "Red5 Pro service was found at $RPRO_SERVICE_LOCATION/$RPRO_SERVICE_NAME"
@@ -2290,7 +2294,11 @@ stop_red5pro_service()
 			lecho "It seems Red5 Pro service was not installed. Please register Red5 Pro service from the menu for best results."
 			lecho " Attempting to stop using \"red5-shutdown.sh\""
 
-			cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh force > /dev/null 2>&1 &	
+			if is_running_red5pro_service_v1; then
+				cd $DEFAULT_RPRO_PATH && exec $DEFAULT_RPRO_PATH/red5-shutdown.sh > /dev/null 2>&1 &
+			else
+				lecho "Server is not running!" 
+			fi	
 		else
 			lecho "Red5 Pro service was found at $RPRO_SERVICE_LOCATION/$RPRO_SERVICE_NAME."
 			lecho "Attempting to stop Red5 Pro service"
@@ -2551,8 +2559,8 @@ backup_rpro()
 
 
 	if [ ! -d "$RPRO_BACKUP_HOME" ]; then
-	  mkdir -p $RPRO_BACKUP_HOME
-	  chmod ugo+w $RPRO_BACKUP_HOME
+	  sudo mkdir -p $RPRO_BACKUP_HOME
+	  sudo chmod ugo+w $RPRO_BACKUP_HOME
 	fi
 
 	
@@ -2581,7 +2589,7 @@ backup_rpro()
 			if [ -f $red5pro_ini ]; then
 				lecho "Your active Red5 Pro installation was backed up successfully to $RPRO_BACKUP_FOLDER"
 				echo "You can restore any necessary file(s) later from the backup manually."
-				chmod -R ugo+w $RPRO_BACKUP_FOLDER
+				sudo chmod -R ugo+w $RPRO_BACKUP_FOLDER
 				rpro_backup_success=1
 			else
 				lecho "Something went wrong!! Perhaps files were not copied properly"
@@ -2947,7 +2955,7 @@ load_configuration()
 
 
 	RED5PRO_DEFAULT_DOWNLOAD_FOLDER="$CURRENT_DIRECTORY/$RED5PRO_DEFAULT_DOWNLOAD_FOLDER_NAME"
-	[ ! -d foo ] && mkdir -p $RED5PRO_DEFAULT_DOWNLOAD_FOLDER && chmod ugo+w $RED5PRO_DEFAULT_DOWNLOAD_FOLDER
+	[ ! -d foo ] && sudo mkdir -p $RED5PRO_DEFAULT_DOWNLOAD_FOLDER && sudo chmod ugo+w $RED5PRO_DEFAULT_DOWNLOAD_FOLDER
 	
 
 	RED5PRO_SSL_LETSENCRYPT_FOLDER="$CURRENT_DIRECTORY/$RED5PRO_SSL_LETSENCRYPT_FOLDER_NAME"
