@@ -119,49 +119,49 @@ RED5PRO_SSL_DEFAULT_WSS_PORT=8083
 
 ##### CONFIGURAION OPTIONS:
 
-* MIN_JAVA_VERSION : Minimim version of java (JRE/JDK) that is required by the installer to install Red5pro on the system. This value should not be changed by the user.
+* `MIN_JAVA_VERSION` : Minimim version of java (JRE/JDK) that is required by the installer to install Red5pro on the system. This value should not be changed by the user.
 
 
-* JAVA_JRE_DOWNLOAD_URL : Base url of the latest rpm package(s) required for java installation on CentOs. This value should not be changed by the user.
+* `JAVA_JRE_DOWNLOAD_URL` : Base url of the latest rpm package(s) required for java installation on CentOs. This value should not be changed by the user.This attribute is deprecated.
 
 
-* JAVA_32_FILENAME : Filename of the 32 bit java rpm package for CentOs.
+* `JAVA_32_FILENAME` : Filename of the 32 bit java rpm package for CentOs .This attribute is deprecated.
 
 
-* JAVA_64_FILENAME : Filename of the 64 bit java rpm package for CentOs.
+* `JAVA_64_FILENAME` : Filename of the 64 bit java rpm package for CentOs.This attribute is deprecated.
 
 
-* DEFAULT_BACKUP_FOLDER : Name of the default red5pro backup directory. This is always expected to be inside the hoem directory.The program creates the directory if it does not exist.
+* `DEFAULT_BACKUP_FOLDER` : Name of the default red5pro backup directory. This is always expected to be inside the hoem directory.The program creates the directory if it does not exist.
 
 
-* DEFAULT_RPRO_FOLDER_NAME : Name of the default red5pro install directory (install location). The program always installs red5pro in the current directory, where the script is run from.
+* `DEFAULT_RPRO_FOLDER_NAME` : Name of the default red5pro install directory (install location). The program always installs red5pro in the current directory, where the script is run from.
 
-* LOG_FILE_NAME : Name of installer log file. Defaults to `rpro_installer.log`.
+* `LOG_FILE_NAME` : Name of installer log file. Defaults to `rpro_installer.log`.
 
-* LOGGING : Boolean flag to enable or disable logging. Defaults to `true`
+* `LOGGING` : Boolean flag to enable or disable logging. Defaults to `true`
 
-* RED5PRO_DOWNLOAD_URL : Custom Red5 Pro archive URL for installation (optional). 
+* `RED5PRO_DOWNLOAD_URL` : Custom Red5 Pro archive URL for installation (optional). 
 >This will be used if you install Red5 Pro from URL
 
-* RED5PRO_INSTALLER_OPERATIONS_CLEANUP : Whether to clean up the downloaded Red5 Pro archive file from installer's `tmp` directory. `1` to enable and `0` to disable. Defaults to `1`.
+* `RED5PRO_INSTALLER_OPERATIONS_CLEANUP` : Whether to clean up the downloaded Red5 Pro archive file from installer's `tmp` directory. `1` to enable and `0` to disable. Defaults to `1`.
 
-* RED5PRO_MEMORY_PCT : How much (percentage) of system memory to allocate for JVM to Run Red5 Pro. Defaults to `80`.
+* `RED5PRO_MEMORY_PCT` : How much (percentage) of system memory to allocate for JVM to Run Red5 Pro. Defaults to `80`.
 
-* SERVICE_VERSION : Which version  of daemon service initialization to use for Red5 Pro instalaltion. Installing service allows you to auto start Red5 Pro with system startup and manage start/stop/restart more efficiently.`Classic` (1) style uses `init.d` whereas `Modern` (2) style uses `jsvc` for linux service management. Defaulst to `Modern` (2).
+* `SERVICE_VERSION` : Which version  of daemon service initialization to use for Red5 Pro instalaltion. Installing service allows you to auto start Red5 Pro with system startup and manage start/stop/restart more efficiently.`Classic` (1) style uses `init.d` whereas `Modern` (2) style uses `jsvc` for linux service management. Defaulst to `Modern` (2).
 
-* RED5PRO_SSL_LETSENCRYPT_FOLDER_NAME : The Letsencrypt SSL installer directory name. This is created in the installer directory.
+*` RED5PRO_SSL_LETSENCRYPT_FOLDER_NAME` : The Letsencrypt SSL installer directory name. This is created in the installer directory.
 
-* RED5PRO_SSL_LETSENCRYPT_GIT : Letsencrypt SSL installer GIT repo URL
+* `RED5PRO_SSL_LETSENCRYPT_GIT` : Letsencrypt SSL installer GIT repo URL
 
-* RED5PRO_SSL_LETSENCRYPT_EXECUTABLE : The Letsencrypt SSL installer executable 
+* `RED5PRO_SSL_LETSENCRYPT_EXECUTABLE` : The Letsencrypt SSL installer executable 
 
-* RED5PRO_SSL_DEFAULT_HTTP_PORT : Red5 Pro default HTTP port. This is used by the SSL installer to configure the HTTP port value.
+* `RED5PRO_SSL_DEFAULT_HTTP_PORT` : Red5 Pro default HTTP port. This is used by the SSL installer to configure the HTTP port value.
 
-* RED5PRO_SSL_DEFAULT_HTTPS_PORT : Red5 Pro default HTTPS port. This is used by the SSL installer to configure the HTTPS port value.
+* `RED5PRO_SSL_DEFAULT_HTTPS_PORT` : Red5 Pro default HTTPS port. This is used by the SSL installer to configure the HTTPS port value.
 
-* RED5PRO_SSL_DEFAULT_WS_PORT : Red5 Pro default unsecure websocket port. This is used by the SSL installer to configure the unsecure websocket port value.
+* `RED5PRO_SSL_DEFAULT_WS_PORT` : Red5 Pro default unsecure websocket port. This is used by the SSL installer to configure the unsecure websocket port value.
 
-* RED5PRO_SSL_DEFAULT_WSS_PORT : Red5 Pro default secure websocket port. This is used by the SSL installer to configure the secure websocket port value.
+* `RED5PRO_SSL_DEFAULT_WSS_PORT` : Red5 Pro default secure websocket port. This is used by the SSL installer to configure the secure websocket port value.
 
 
 ---
