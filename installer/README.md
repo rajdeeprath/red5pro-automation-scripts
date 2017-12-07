@@ -193,8 +193,6 @@ __You can select a menu option by typing the number that represents that option 
 The basic mode provides all the options, commonly required to setup a new red5pro installation and other operations such as starting / stopping red5.  The basic menu option allows you to:
 
 
-![Basic Mode](Linux/images/basic_mode.png?raw=true "Basic Mode")
-
 
 
 #### 1. INSTALL LATEST RED5PRO
