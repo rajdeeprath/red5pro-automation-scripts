@@ -73,9 +73,47 @@ JAVA_64_FILENAME="jre-8u102-linux-x64.rpm"
 DEFAULT_BACKUP_FOLDER=red5pro_backups
 
 
+# Download folder name => [ Resolved in current directory ]
+# ----------------------------------------------
+RED5PRO_DEFAULT_DOWNLOAD_FOLDER_NAME=tmp
+
+
 # Red5pro install location
 # ----------------------------------------
-DEFAULT_RPRO_FOLDER_NAME=rpro
+DEFAULT_RPRO_INSTALL_LOCATION=/usr/local
+DEFAULT_RPRO_FOLDER_NAME=red5pro
+
+# Logging settings
+# ----------------------------------------
+LOG_FILE_NAME=rpro_installer.log
+LOGGING=true
+
+# CUSTOM URL LOCATION
+# ---------------------------------------
+RED5PRO_DOWNLOAD_URL=
+
+# INSTALLER CLEANUP
+# ---------------------------------------
+RED5PRO_INSTALLER_OPERATIONS_CLEANUP=1
+
+# MINIMUM PERCENTAGE OF SYSTEM MEMORY TO ALLOCATE
+# ---------------------------------------
+RED5PRO_MEMORY_PCT=80
+
+# SERVICE TYPE [ init.d (1) or jsvc (2)
+# ---------------------------------------
+SERVICE_VERSION=2
+
+
+# SSL INSTALLER
+# ---------------------------------------
+RED5PRO_SSL_LETSENCRYPT_FOLDER_NAME=letsencrypt
+RED5PRO_SSL_LETSENCRYPT_GIT=https://github.com/letsencrypt/letsencrypt
+RED5PRO_SSL_LETSENCRYPT_EXECUTABLE=letsencrypt-auto
+RED5PRO_SSL_DEFAULT_HTTP_PORT=80
+RED5PRO_SSL_DEFAULT_HTTPS_PORT=443
+RED5PRO_SSL_DEFAULT_WS_PORT=8081
+RED5PRO_SSL_DEFAULT_WSS_PORT=8083
 
 
 ```
@@ -100,6 +138,34 @@ DEFAULT_RPRO_FOLDER_NAME=rpro
 
 * DEFAULT_RPRO_FOLDER_NAME : Name of the default red5pro install directory (install location). The program always installs red5pro in the current directory, where the script is run from.
 
+* LOG_FILE_NAME : Name of installer log file. Defaults to `rpro_installer.log`.
+
+* LOGGING : Boolean flag to enable or disable logging. Defaults to `true`
+
+* RED5PRO_DOWNLOAD_URL : Custom Red5 Pro archive URL for installation (optional). 
+>This will be used if you install Red5 Pro from URL
+
+* RED5PRO_INSTALLER_OPERATIONS_CLEANUP : Whether to clean up the downloaded Red5 Pro archive file from installer's `tmp` directory. `1` to enable and `0` to disable. Defaults to `1`.
+
+* RED5PRO_MEMORY_PCT : How much (percentage) of system memory to allocate for JVM to Run Red5 Pro. Defaults to `80`.
+
+* SERVICE_VERSION : Which version  of daemon service initialization to use for Red5 Pro instalaltion. Installing service allows you to auto start Red5 Pro with system startup and manage start/stop/restart more efficiently.`Classic` (1) style uses `init.d` whereas `Modern` (2) style uses `jsvc` for linux service management. Defaulst to `Modern` (2).
+
+* RED5PRO_SSL_LETSENCRYPT_FOLDER_NAME : The Letsencrypt SSL installer directory name. This is created in the installer directory.
+
+* RED5PRO_SSL_LETSENCRYPT_GIT : Letsencrypt SSL installer GIT repo URL
+
+* RED5PRO_SSL_LETSENCRYPT_EXECUTABLE : The Letsencrypt SSL installer executable 
+
+* RED5PRO_SSL_DEFAULT_HTTP_PORT : Red5 Pro default HTTP port. This is used by the SSL installer to configure the HTTP port value.
+
+* RED5PRO_SSL_DEFAULT_HTTPS_PORT : Red5 Pro default HTTPS port. This is used by the SSL installer to configure the HTTPS port value.
+
+* RED5PRO_SSL_DEFAULT_WS_PORT : Red5 Pro default unsecure websocket port. This is used by the SSL installer to configure the unsecure websocket port value.
+
+* RED5PRO_SSL_DEFAULT_WSS_PORT : Red5 Pro default secure websocket port. This is used by the SSL installer to configure the secure websocket port value.
+
+
 ---
 
 ## PROGRAM OPTIONS
@@ -114,7 +180,7 @@ The detected information is printed on screen and then the menu which allows you
 
 
 * Basic Mode: Provides most of the options for new installations.
-* Advance Mode: Provides advance options for managing a existing red5pro installation.
+* Utility Mode: Provides utilities for doing more with the Red5 Pro installation
 
 
 ![Main Menu](Linux/images/main_menu.png?raw=true "Main Menu")
@@ -160,15 +226,16 @@ Depending on whether the softwares are found in the os distribution, the script 
 The script prompts to determine if a autostart service is required for the red5pro installation. If user accepts, The program creates a linux startup script for the current OS platform. This script helps red5pro start automatically with operating system.
 
 
-#### 2. INSTALL RED5PRO FROM ZIP
+#### 2. INSTALL RED5PRO FROM URL
 
-This option lets you install Red5pro from a pre downloaded zip. In case you have a older Red5pro that you wish to install or if you do not want to have the program download the latest red5pro for you.
+This option lets you install Red5pro from a arbitrary Red5 Pro server archive located anywhere on the internet or LAN. In case you have a custom version of Red5 Pro that you wish to install you shoudl use this option. The only thing to remember is that the archive format (folder level in the archives) should be compatible with the installer. 
 
-The script checks the basic red5pro requirements as with the first option (INSTALL LATEST RED5PRO). Once requirements are met, it prompts you for the full absolute path of the red5pro zip file. 
+> Basically the rule of the thumb is that your archive should extract to a single folder containi9ng all the Red5 Pro server files.
 
-__The archive should have been downloaded from red5pro.com. Using a archive from a different source will not work__
+The script checks the basic red5pro requirements as with the first option (INSTALL LATEST RED5PRO). Once requirements are met, it prompts you for the full qualified URL of the red5pro server archive (From S3 bucket or dropbox etc). 
 
 The program extracts the archive file's content and copies the red5pro files into the install location. The rest of the process is exactly the same as for the first option (INSTALL LATEST RED5PRO).
+
 
 
 
@@ -185,8 +252,6 @@ On selection of this option, the program looks for existing red5pro installation
 
 This option navigates to a sub-menu which allows us to view, install and update a red5pro license.
 
-![License Menu](Linux/images/license_menu.png?raw=true "License Menu")
-
 
 __1. ADD / UPDATE LICENSE :__  Provides option to add a new license or update one if it already exists. The program looks for an existing red5pro installation and then the LICENSE.KEY file at expected location. If a file is found it allows you to enter a red5pro license code from the terminal interface.
 
@@ -199,31 +264,18 @@ __2. VIEW LICENSE :__  Provides option to view an existing red5pro license via t
 This option allows you to start Red5pro. On selecting this option, the program first checks to see if a Red5pro service is installed on the system or not. If a red5pro service is found, it attempts to start red5 using the service. If no service is found it attempts to start red5 using 'red5.sh' script located at the red5 install location.
 
 
-__The program doe snot check the running state of red5pro. If it is started, starting it again will have no effect._
-
-__NOTE: This does not check to see if you have installed red5pro or not. It is assumed that you have a valid red5pro instalaltion before attempting to start it.
-
-
 #### 6. STOP RED5PRO
 
 This option allows you to stop Red5pro. On selecting this option, the program first checks to see if a Red5pro service is installed on the system or not. If a red5pro service is found, it attempts to stop red5 using the service. If no service is found it attempts to stop red5 using 'red5.sh' script located at the red5 install location.
-
-__The program doe snot check the running state of red5pro. If it is stopped, stopping it again will have no effect.__
-
-__NOTE: This does not check to see if you have installed red5pro or not. It is assumed that you have a valid red5pro instalaltion before attempting to stop it.__
-
 
 
 ===
 
 
-### ADVANCE MODE
+### UTILITY MODE
 
 
-TO DO
-
-
-![Advance Mode](Linux/images/advance_mode.png?raw=true "Advance Mode")
+Description : TO DO
 
 
 
@@ -242,27 +294,4 @@ This option lets you install red5 service. On selecting this option, the program
 This option lets you uninstall red5 service. On selecting this option, the program first checks to see if red5pro in installed. Next it checks to see if service is installed. If red5pro is not installed the operation exits. If red5pro installation is found the program attempts to unregister it as a service. If red5pro service does not exist on the OS, the operation exits. If service is found it is removed.
 
 
-#### 4. UPGRADE RED5PRO FROM LATEST
 
-The upgrade option allows you to install the latest red5pro over an existing installation. Although this is fairly a complex process, the program simplifies it for the user by providing step by step onscreen instructions.
-
-
-Selecting this option, the program checks for an existing red5pro installation. If an existing installation is not found the operation exits.If an installation is found at install location, the program will create a backup of the existing red5pro installation into the default red5pro backup location automatically before installing the new copy. 
-
-The program prompts the user for confirmation to follow through. On confirmation, it creates a backup of existing red5pro installation and displays the path of the backup location.
-
-
-
-The program then follows through the new red5pro installation by downloading the latest red5pro from red5pro.com. (__Similar to Basic Mode -> Install Latest Red5pro__) .  
-
-After the installation is complete the program prompts the user for optional restoration help. If the user accepts, the program switches to restore wizard. If user does not accept the operation exists.
-
-The restore wizard helps the user restore some of the common items that can be restored such as :
-
-
-* License - RED5_HOME/LICENSE.KEY
-* Cluster configuration - RED5_HOME/webapps/root/red5-default.xml
-* Web applications - RED5_HOME/webapps/*
-
-
-The restore wizard prompts the user for each restorable item. If user accepts the item is automatically restored from the backup into the new installation. If the user rejects the wizard skips that item. Restoration can be re-done anytime manually as well. At the end of the wizard the operation exits automatically.
