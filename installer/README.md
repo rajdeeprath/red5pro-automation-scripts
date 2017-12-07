@@ -37,9 +37,7 @@ The script requires super user privileges to execute and carry out subtasks. Hen
 
 ##### CENTOS
 
-* Execute the script by issuing the following command : `sudo  bash./rpro-utils.sh`
-
->> Use the menu driven interface sequentially and follow instructiosn carefully for best results.
+** CentOs is currently not supported**
 
 
 ##### SPECIAL NOTE
