@@ -37,7 +37,7 @@ The script requires super user privileges to execute and carry out subtasks. Hen
 
 ##### CENTOS
 
-** CentOs is currently not supported**
+**CentOs is currently not supported**
 
 
 ##### SPECIAL NOTE
