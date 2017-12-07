@@ -149,7 +149,7 @@ RED5PRO_SSL_DEFAULT_WSS_PORT=8083
 
 * `SERVICE_VERSION` : Which version  of daemon service initialization to use for Red5 Pro instalaltion. Installing service allows you to auto start Red5 Pro with system startup and manage start/stop/restart more efficiently.`Classic` (1) style uses `init.d` whereas `Modern` (2) style uses `jsvc` for linux service management. Defaulst to `Modern` (2).
 
-*` RED5PRO_SSL_LETSENCRYPT_FOLDER_NAME` : The Letsencrypt SSL installer directory name. This is created in the installer directory.
+* `RED5PRO_SSL_LETSENCRYPT_FOLDER_NAME` : The Letsencrypt SSL installer directory name. This is created in the installer directory.
 
 * `RED5PRO_SSL_LETSENCRYPT_GIT` : Letsencrypt SSL installer GIT repo URL
 
