@@ -181,9 +181,6 @@ The detected information is printed on screen and then the menu which allows you
 * Utility Mode: Provides utilities for doing more with the Red5 Pro installation
 
 
-![Main Menu](Linux/images/main_menu.png?raw=true "Main Menu")
-
-
 __You can select a menu option by typing the number that represents that option and pressing [ ENTER ]__
 
 
