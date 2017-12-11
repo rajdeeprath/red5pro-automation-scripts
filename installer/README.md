@@ -268,21 +268,23 @@ This option allows you to stop Red5pro. On selecting this option, the program fi
 ### UTILITY MODE
 
 
-Description : TO DO
+
+#### 1. CHECK EXISTING RED5 PRO INSTALLATION
+
+Check the default install location for an existing Red5 Pro installation and displays the version if found.
 
 
-
-#### 1. WHICH JAVA AM I USING ?
+#### 2. WHICH JAVA AM I USING ?
 
 Selecting this option lets you see the current java version on your system. If java is not found, the program will print a message to notify the same.
 
 
-#### 2. INSTALL RED5PRO SERVICE
+#### 3. INSTALL RED5PRO SERVICE
 
 This option lets you install red5 service. On selecting this option, the program first checks to see if red5pro in installed. If red5pro is not installed the operation exits. If red5pro installation is found the program attempts to register it as a service. If red5pro service is already installed on the OS, it prompts the user to overwrite it. If user selects to overwrite (By selecting 'y' + ENTER), the service will be re-installed else the operation exists.
 
 
-#### 3. UNINSTALL RED5PRO SERVICE
+#### 4. UNINSTALL RED5PRO SERVICE
 
 This option lets you uninstall red5 service. On selecting this option, the program first checks to see if red5pro in installed. Next it checks to see if service is installed. If red5pro is not installed the operation exits. If red5pro installation is found the program attempts to unregister it as a service. If red5pro service does not exist on the OS, the operation exits. If service is found it is removed.
 
