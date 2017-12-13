@@ -181,6 +181,17 @@ pause_license()
 
 
 
+pause_autoscale()
+{
+
+	printf "\n"
+	read -r -p 'Press [ Enter ] key to continue...' key
+
+	show_autoscale_menu
+}
+
+
+
 empty_pause()
 {
 	printf "\n"
@@ -249,6 +260,24 @@ check_java()
 
 
 # Public
+
+check_ntp()
+{
+	write_log "Checking for ntp"			
+	ntp_check_success=0
+
+	if isinstalled ntp; then
+	ntp_check_success=1
+	write_log "ntp utility was found"		
+	else
+	ntp_check_success=0
+	lecho "ntp utility not found."				
+	fi
+}
+
+
+
+
 check_unzip()
 {
 	write_log "Checking for unzip utility"			
@@ -465,6 +494,17 @@ install_unzip_rhl()
 
 # Public
 
+install_ntp()
+{
+	write_log "Installing ntp"
+
+	if isDebian; then
+	install_ntp_deb	
+	else
+	install_ntp_rhl
+	fi		
+}
+
 
 install_git()
 {
@@ -505,6 +545,28 @@ install_bc()
 
 
 # Private
+
+install_ntp_deb()
+{
+	write_log "Installing ntp on debian"
+
+	sudo apt-get install -y ntp
+
+	install_ntp="$(which ntp)";
+	lecho "ntp installed at $install_git"
+}
+
+
+install_ntp_rhl()
+{
+	write_log "Installing ntp on rhle"
+
+	sudo yum -y install ntp
+
+	install_ntp="$(which ntp)";
+	lecho "ntp installed at $install_ntp"
+}
+
 
 install_git_deb()
 {
@@ -2817,6 +2879,206 @@ set_update_license()
 
 
 
+######################################################################################
+
+############################ AUTOSCALE MENU ############################################
+
+
+prepare_autoscaling_node()
+{
+	local autoscale_wizard
+	local autoscale_wizard_ok=0
+	local autoscale_host
+	local autoscale_port
+	local autoscale_enable_api
+	local autoscale_api_enabled
+	local autoscale_rpro_api_token
+	local autoscale_rpro_api_token_security
+	local autoscale_rpro_api_host_security
+	local autoscale_cluster_password
+
+
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+	echo -e "\e[44m ----------- AUTOSCALING NODE WIZARD ------------- \e[m"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+	echo "			  					       "   
+	echo "This wizard will help you configure the current Red5 Pro installation as a autoscaling node for deploymkent in conjunction with the Stream Manager. you can learn more about Red5 Pro autoscaling at : https://www.red5pro.com/docs/autoscale/"
+	echo "			  					       " 
+
+	read -r -p "Do you wish to continue ? [y/N] " autoscale_wizard
+	case $autoscale_wizard in
+	[yY][eE][sS]|[yY]) 
+		autoscale_wizard_ok=1	
+	;;
+	[nN][oO]) 
+		lecho_err "Wizard cancelled" && sleep 2
+		pause_autoscale
+	;;
+	*)
+	sleep 1
+	pause_autoscale
+	;;
+	esac
+
+
+	printf "\n"
+
+	# STEP 1 : configure autoscale.xml 
+	lecho "Enter the Stream Manager instance Hostname/IP or the Load Balancer HostName (If using AWS Loadbalancer) or Press [Enter] to skip : "
+	read autoscale_host
+	printf "\n"
+
+	lecho "Enter the Stream Manager instance Port or the Load Balancer Port (If using AWS Loadbalancer) or Press [Enter] to skip : "
+	read autoscale_port 
+	printf "\n"
+
+
+	# STEP 2 : configure cluster.xml
+	lecho "Enter the cluster password or Press [Enter] to skip : "
+	read autoscale_cluster_password
+	printf "\n"
+
+
+	# STEP 3 : configure api web app [ optional ]
+	read -r -p "Enable Red5 Pro Server API access ? [y/N] " autoscale_enable_api
+	case $autoscale_enable_api in
+	[yY][eE][sS]|[yY]) 
+		autoscale_api_enabled=1	
+	;;
+	*)
+	sleep 1
+	lecho "Skipping 'api' configuration!"
+	;;
+	esac
+
+	printf "\n"
+
+
+	# STEP 4 : confirm all values before writing to files
+	cls
+
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+	echo -e "\e[44m ----------- REVIEW CONFIGURATION ------------- \e[m"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+
+	printf "\n"
+
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+	echo -e "\e[44m ----------- AUTOSCALE CONFIGURATION ------------- \e[m"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -		
+
+	lecho "Autoscaling host : $autoscale_host"
+	lecho "Autoscaling port : $autoscale_port"
+
+	printf "\n"
+
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+	echo -e "\e[44m ----------- CLUSTER CONFIGURATION ------------- \e[m"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -		
+
+	lecho "Cluster password : $autoscale_cluster_password"
+
+	printf "\n"
+
+	
+	if [[ $autoscale_api_enabled -eq 1 ]]; then
+		echo "								"
+
+		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+		echo -e "\e[44m ----------- API CONFIGURATION ------------- \e[m"
+		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -		
+
+		lecho "Host security : $autoscale_rpro_api_host_security"
+		lecho "Token security : $autoscale_rpro_api_token_security"
+		lecho "Token : $autoscale_rpro_api_token"
+
+		printf "\n"
+	fi
+
+
+
+	local autoscale_node_config_ok
+	read -r -p "Is the configuration ok to proceed with ? [y/N] " autoscale_node_config_ok
+	case $autoscale_node_config_ok in
+	[yY][eE][sS]|[yY]) 
+		autoscale_wizard_ok=1			
+	;;
+	[nN][oO]) 
+		sleep 2 && cls
+		prepare_autoscaling_node
+	;;
+	*)
+		sleep 1
+		pause_autoscale
+	;;
+	esac
+
+
+	# STEP 5 : write files
+	lecho "Configuration 'ok'. Updating configuration files..."
+	sleep 1
+
+	# STEP 6 : delete unwanted web apps
+	#lecho "Removing unwanted webapps that are unnecessary for a node"
+	sleep 2
+
+	# STEP 7 : check install ntp
+	prerequisites_ntp
+	sleep 1
+
+	# STEP 8 : check service -> must install
+	register_rpro_as_service
+	sleep 1
+
+	# STEP 9 : Done => ready to create image!!
+	lecho "Instance is now ready to be used as unwanted an autoscaling node!. You can now convert the instance to a image from your platform's panel options".
+	
+}
+
+
+show_autoscale_menu()
+{
+	autoscale_menu
+	autoscale_menu_read_options
+}
+
+
+
+autoscale_menu()
+{
+
+	cls
+
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+	echo -e "\e[44m ----------- AUTOSCALING UTILITIES ------------- \e[m"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+	echo "1. PREPARE INSTALLATION FOR NODE IMAGE"
+	echo "2. PREPARE INSTALLATION FOR STREAM MANAGER"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+	echo "3. BACK TO MAIN MENU"
+	echo "			  "   
+}
+
+
+
+autoscale_menu_read_options(){
+
+	local choice
+	read -p "Enter choice [ 1 - 3] " choice
+	case $choice in
+		1) cls && prepare_autoscaling_node ;;
+		2) cls && echo -e "\e[41m Coming soon!!\e[m"  && sleep 3 && show_autoscale_menu;;
+		3) 
+		if [ $RPRO_MODE -eq  1]; then 
+		show_utility_menu 
+		else 
+		show_simple_menu 
+		fi 
+		;;
+		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_autoscale_menu ;;
+	esac
+}
+
 
 
 ######################################################################################
@@ -2859,8 +3121,8 @@ license_menu_read_options(){
 	local choice
 	read -p "Enter choice [ 1 - 3] " choice
 	case $choice in
-		1) set_update_license 0 ;;
-		2) check_license 0 ;;
+		1) cls && set_update_license 0 ;;
+		2) cls && check_license 0 ;;
 		3) 
 		if [ $RPRO_MODE -eq  1]; then 
 		show_utility_menu 
@@ -2996,11 +3258,14 @@ simple_menu()
 		echo "6. --- START RED5 PRO			"
 		echo "7. --- STOP RED5 PRO			"
 		echo "8. --- RESTART RED5 PRO			"
+		echo "------ RED5 PRO AUTOSCALING		"
+		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+		echo "9. --- AUTOSCALING UTILITIES			"
 	fi
 
 
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	echo "9. --- BACK TO MODE SELECTION"
+	echo "10. --- BACK TO MODE SELECTION"
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "0. --- Exit				"
 	echo "                             		"
@@ -3068,7 +3333,15 @@ simple_menu_read_options(){
 				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu
 			fi
 			;;
-		9) cls && main ;;
+		9)
+
+			if [[ $rpro_exists -eq 1 ]]; then
+				cls && show_autoscale_menu
+			else
+				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu
+			fi
+			;;
+		10) cls && main ;;
 		0) exit 0;;
 		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu ;;
 	esac
@@ -3304,6 +3577,20 @@ prerequisites()
 	prerequisites_unzip
 	prerequisites_wget
 	prerequisites_bc
+}
+
+
+
+prerequisites_ntp()
+{
+	check_ntp
+
+	if [[ $ntp_check_success -eq 0 ]]; then
+		echo "Installing ntp..."
+		sleep 2
+
+		install_ntp
+	fi 
 }
 
 
