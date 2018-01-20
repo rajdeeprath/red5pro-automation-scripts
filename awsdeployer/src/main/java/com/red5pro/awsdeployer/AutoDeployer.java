@@ -22,13 +22,11 @@ public class AutoDeployer
     	
     	Context ctx = new ContextBase();
     	ctx.put("configuration", conf);
-    	ctx.put("credentials", creds);
-    	
+    	ctx.put("credentials", creds);    	
     	
     	try 
     	{
-    		//VPCCreationCommand command = new VPCCreationCommand();
-			//command.execute(ctx);
+    		
 		}
     	catch (Exception e) 
     	{

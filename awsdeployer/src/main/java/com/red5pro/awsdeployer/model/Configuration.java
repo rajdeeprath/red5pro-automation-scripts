@@ -2,9 +2,9 @@ package com.red5pro.awsdeployer.model;
 
 public class Configuration {
 	
-	private String awsAccessKey = "AKIAJCFFDGGDMDDBFH42YIQ";
+	private String awsAccessKey = "aws-key";
 	
-	private String awsAccessSecret = "3jc6zki5ssddgSvs4uSesOrUEERF2gbQWG7+dfJo";
+	private String awsAccessSecret = "aws-secret";
 	
 	private String defaultRegion;
 	
@@ -18,7 +18,7 @@ public class Configuration {
 	
 	private String sessionId = "red5proautoscaling"; // must be unique
 	
-	private String vpcName = "autoscalingvpc"; // must be unique
+	private String vpcName = "autoscalignvpc";
 	
 	private String vpcCidr = "10.0.0.0/16";
 
