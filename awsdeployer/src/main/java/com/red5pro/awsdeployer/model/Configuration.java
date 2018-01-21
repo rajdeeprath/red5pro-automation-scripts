@@ -28,7 +28,7 @@ public class Configuration {
 	
 	private String dbUsername = "ir5user";
 	
-	private String dbPassword = "xyz@1234567";
+	private String dbPassword = "xyz1234567";
 	
 	private String dbRegion = "useast-1";
 	
@@ -39,6 +39,8 @@ public class Configuration {
 	private int dbAllocationSize = 20;
 	
 	private String dbSecurityGroupName = "autoscalingrds";
+	
+	private String schemaScript = "C:\\Users\\rajde\\Documents\\GitHub\\red5pro-auto-scaling\\streammanager\\src\\main\\webapp\\WEB-INF\\sql\\cluster.sql";
 	
 
 	public String getAwsAccessSecret() {
@@ -191,6 +193,14 @@ public class Configuration {
 
 	public void setDbSecurityGroupName(String dbSecurityGroupName) {
 		this.dbSecurityGroupName = dbSecurityGroupName;
+	}
+
+	public String getSchemaScript() {
+		return schemaScript;
+	}
+
+	public void setSchemaScript(String schemaScript) {
+		this.schemaScript = schemaScript;
 	}
 	
 	
