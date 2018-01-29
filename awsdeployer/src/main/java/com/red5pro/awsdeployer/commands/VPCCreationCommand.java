@@ -64,9 +64,9 @@ public class VPCCreationCommand implements Command {
 				System.out.print("Creating Vpc for autoscaling...");
 				
 				Filter name = new Filter().withName("tag:Name").withValues(configuration.getVpcName());
-				//Filter sessionId = new Filter().withName("tag:sessionid").withValues(configuration.getSessionId());
+				Filter sessionId = new Filter().withName("tag:sessionid").withValues(configuration.getSessionId());
 				
-				DescribeVpcsRequest checkVpcRequest = new DescribeVpcsRequest().withFilters(new Filter[] {name});
+				DescribeVpcsRequest checkVpcRequest = new DescribeVpcsRequest().withFilters(new Filter[] {name, sessionId});
 				DescribeVpcsResult vpcResponse = ec2Client.describeVpcs(checkVpcRequest);
 				List<Vpc> vpcs = vpcResponse.getVpcs();
 				

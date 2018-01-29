@@ -21,7 +21,7 @@
     <logback.version>1.1.6</logback.version>
     <commons.io.version>1.3.2</commons.io.version>
     <commons.chain.version>1.2</commons.chain.version>
-    <aws.sdk>1.11.98</aws.sdk>
+    <aws.sdk>1.11.268</aws.sdk>
   </properties>
 
   <dependencyManagement>

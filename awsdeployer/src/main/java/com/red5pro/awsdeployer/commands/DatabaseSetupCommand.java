@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -27,24 +28,25 @@ import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
+import com.amazonaws.services.ec2.model.DescribeVpcsRequest;
+import com.amazonaws.services.ec2.model.DescribeVpcsResult;
 import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.IpRange;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Tag;
+import com.amazonaws.services.ec2.model.Vpc;
 import com.amazonaws.services.rds.AmazonRDS;
 import com.amazonaws.services.rds.AmazonRDSClient;
 import com.amazonaws.services.rds.AmazonRDSClientBuilder;
 import com.amazonaws.services.rds.model.CreateDBInstanceRequest;
 import com.amazonaws.services.rds.model.CreateDBSecurityGroupRequest;
+import com.amazonaws.services.rds.model.CreateDBSubnetGroupRequest;
 import com.amazonaws.services.rds.model.DBInstance;
 import com.amazonaws.services.rds.model.DBInstanceNotFoundException;
-import com.amazonaws.services.rds.model.DBSecurityGroup;
-import com.amazonaws.services.rds.model.DBSecurityGroupNotFoundException;
+import com.amazonaws.services.rds.model.DBSubnetGroup;
 import com.amazonaws.services.rds.model.DescribeDBInstancesRequest;
 import com.amazonaws.services.rds.model.DescribeDBInstancesResult;
-import com.amazonaws.services.rds.model.DescribeDBSecurityGroupsRequest;
-import com.amazonaws.services.rds.model.DescribeDBSecurityGroupsResult;
 import com.red5pro.awsdeployer.component.ScriptRunner;
 import com.red5pro.awsdeployer.model.Configuration;
 
@@ -59,6 +61,8 @@ public class DatabaseSetupCommand implements Command {
 	private String securityGroupId;
 	
 	private DBInstance instance;
+	
+	private String vpcId;
 	
 	
 	public DatabaseSetupCommand()
@@ -102,9 +106,22 @@ public class DatabaseSetupCommand implements Command {
 		}
 		catch(AmazonEC2Exception e)
 		{
-			
-			if(e.getMessage().contains("' does not exist"))
+			if(e.getMessage().contains(" does not exist"))
 			{
+				
+				Filter nameTag = new Filter().withName("tag:Name").withValues(configuration.getVpcName());
+				Filter sessionIdTag = new Filter().withName("tag:sessionid").withValues(configuration.getSessionId());
+				
+				DescribeVpcsRequest checkVpcRequest = new DescribeVpcsRequest().withFilters(new Filter[] {nameTag, sessionIdTag});
+				DescribeVpcsResult vpcResponse = ec2Client.describeVpcs(checkVpcRequest);
+				List<Vpc> vpcs = vpcResponse.getVpcs();
+				
+				if(vpcs.size() == 0) {
+					throw new Exception("No Vpc found by the name " + configuration.getVpcName()  + " in region " + configuration.getDbRegion());
+				}
+				
+				vpcId = vpcs.get(0).getVpcId();
+				
 				List<Tag> dbGroupTags = new ArrayList<Tag>();
 				Tag sessionId = new Tag();
 				sessionId.setKey("sessionId");
@@ -114,6 +131,7 @@ public class DatabaseSetupCommand implements Command {
 				CreateSecurityGroupRequest createSecurityGroupRequest = new CreateSecurityGroupRequest();
 				createSecurityGroupRequest.withGroupName(configuration.getDbSecurityGroupName());
 				createSecurityGroupRequest.withDescription("Autoscaling database security group");
+				createSecurityGroupRequest.withVpcId(vpcId);
 				
 				CreateSecurityGroupResult createGroupResult =  ec2Client.createSecurityGroup(createSecurityGroupRequest);
 				securityGroupId = createGroupResult.getGroupId();
@@ -179,7 +197,7 @@ public class DatabaseSetupCommand implements Command {
 				
 				AuthorizeSecurityGroupIngressRequest authorizeSecurityGroupIngressRequest =    new AuthorizeSecurityGroupIngressRequest();
 				authorizeSecurityGroupIngressRequest.withGroupName(configuration.getDbSecurityGroupName()) .withIpPermissions(ipPermission);
-				
+				authorizeSecurityGroupIngressRequest.withGroupId(securityGroupId);
 				ec2Client.authorizeSecurityGroupIngress(authorizeSecurityGroupIngressRequest);
 			}
 			catch(AmazonServiceException ae)
@@ -201,11 +219,21 @@ public class DatabaseSetupCommand implements Command {
 		}
 		catch(DBInstanceNotFoundException e)
 		{
+			CreateDBSubnetGroupRequest dbSubnetGroupReq = new CreateDBSubnetGroupRequest();
+			dbSubnetGroupReq.withDBSubnetGroupName("name");
+			dbSubnetGroupReq.withDBSubnetGroupDescription("description");
+			dbSubnetGroupReq.withSubnetIds("subnet-b8513c97");
+			DBSubnetGroup dbSubnetGroup = client.createDBSubnetGroup(dbSubnetGroupReq);			
+			
 			com.amazonaws.services.rds.model.Tag[] dbInstanceTags = new com.amazonaws.services.rds.model.Tag[1];
 			com.amazonaws.services.rds.model.Tag sessionId = new com.amazonaws.services.rds.model.Tag();
 			sessionId.setKey("sessionId");
 			sessionId.setValue(configuration.getSessionId());
 			dbInstanceTags[0] = sessionId;
+			
+			// VPC security groups 
+			ArrayList<String> list = new ArrayList<String>();
+			list.add(securityGroupId);
 			
 			CreateDBInstanceRequest createDBInstanceRequest = new CreateDBInstanceRequest() //
 	         .withDBInstanceIdentifier(configuration.getDbInstanceName()) //
@@ -218,10 +246,11 @@ public class DatabaseSetupCommand implements Command {
 	         .withAllocatedStorage(configuration.getDbAllocationSize()) //
 	         .withBackupRetentionPeriod(0) //
 	         .withMultiAZ(false)
-	         .withVpcSecurityGroupIds(securityGroupId)
+	         .withVpcSecurityGroupIds(list)
 	         .withLicenseModel("general-public-license")
 	         .withPubliclyAccessible(true)
-	         .withTags(dbInstanceTags);
+	         .withTags(dbInstanceTags)
+	         .withDBSubnetGroupName(dbSubnetGroup.getDBSubnetGroupName());
 			
 			instance = client.createDBInstance(createDBInstanceRequest);
 			
@@ -272,32 +301,76 @@ public class DatabaseSetupCommand implements Command {
 		 
 		 
 		// Create MySql Connection
-		Class.forName("com.mysql.jdbc.Driver");
-		String host = instance.getEndpoint().getAddress();
-		int port = instance.getEndpoint().getPort();
-		Connection con = DriverManager.getConnection("jdbc:mysql://"+host+":"+port+"/" + configuration.getDbSchemaName(), configuration.getDbUsername(), configuration.getDbPassword());
-		Statement stmt = null;
-
-		try 
-		{
-				// Initialize object for ScripRunner
-				ScriptRunner sr = new ScriptRunner(con, false, false);
-
-				// Give the input file to Reader
-				Reader reader = new BufferedReader( new FileReader(configuration.getSchemaScript()));
-
-				// Exctute script
-				sr.runScript(reader);
+		 Connection conn = null;
+		 Statement stmt = null;
+		 String testCommand = "Select * from nodes";
+		 ResultSet rs = null ;
+		 
+		 try
+		 {
+				Class.forName("com.mysql.jdbc.Driver");
+				String host = instance.getEndpoint().getAddress();
+				int port = instance.getEndpoint().getPort();
+				conn = DriverManager.getConnection("jdbc:mysql://"+host+":"+port+"/" + configuration.getDbSchemaName(), configuration.getDbUsername(), configuration.getDbPassword());
 				
-				System.out.print("Script execution complete...");
-		} 
-		catch ( IOException | SQLException e) 
-		{
-				System.err.println("Failed to Execute" + configuration.getSchemaScript() 	+ " The error is " + e.getMessage());
-		}
+				try 
+				{
+						// Initialize object for ScripRunner
+						ScriptRunner sr = new ScriptRunner(conn, false, false);
+		
+						// Give the input file to Reader
+						Reader reader = new BufferedReader( new FileReader(configuration.getSchemaScript()));
+		
+						// Exctute script
+						sr.runScript(reader);
+						
+						System.out.print("Script execution complete...");
+						
+						Thread.sleep(2000);
+						
+						System.out.println("Testing schema with sql command");
+						
+						stmt = conn.createStatement();
+						
+					    rs = stmt.executeQuery(testCommand);
+					    
+					    System.out.println("All ok...");
+				} 
+				catch ( IOException | SQLException e) 
+				{
+						System.err.println("Failed to Execute" + configuration.getSchemaScript() 	+ " The error is " + e.getMessage());
+						throw e;
+				}
+		 }
+		 catch(Exception e)
+		 {
+			 System.err.println("Error setting up database schema" + e.getMessage());
+			 throw e;
+		 }
+		 finally
+		 {
+			 if(rs != null)
+			 {
+				 rs.close();
+				 rs = null;
+			 }
+			 
+			 
+			 if(stmt != null)
+			 {
+				 stmt.close();
+				 stmt = null;
+			 }
+				 
+			 
+			 if(conn != null)
+			 {
+				 conn.close();
+				 conn = null;
+			 }
+		 }
 		 
 		 
-		 // finish
 		return false;
 	}
 
