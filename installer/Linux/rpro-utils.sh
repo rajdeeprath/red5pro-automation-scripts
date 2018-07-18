@@ -3457,11 +3457,7 @@ postrequisites()
 postrequisites_rhl()
 {
 	write_log "Installing additional dependencies for RHLE"
-
-	rpm --import http://packages.atrpms.net/RPM-GPG-KEY.atrpms
-	rpm -ivh http://dl.atrpms.net/all/atrpms-repo-6-7.el6.x86_64.rpm
-	yum -y update --skip-broken
-	yum -y --enablerepo=atrpms install libva libvdpau1
+	sudo yum -y install java unzip jsvc ntp libva libvdpau
 }
 
 
@@ -3470,7 +3466,6 @@ postrequisites_rhl()
 postrequisites_deb()
 {
 	write_log "Installing additional dependencies for DEBIAN"
-
 	sudo apt-get install -y libva1 libva-drm1 libva-x11-1 libvdpau1
 }
 
