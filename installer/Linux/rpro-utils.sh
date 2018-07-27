@@ -939,7 +939,8 @@ ssl_cert_request_form()
 
 
 	# simple validate email
-	if echo "${rpro_ssl_reg_email}" | grep '^[a-zA-Z0-9]*@[a-zA-Z0-9]*\.[a-zA-Z0-9]*$' >/dev/null; then
+	# if echo "${rpro_ssl_reg_email}" | grep '^[a-zA-Z0-9]*@[a-zA-Z0-9]*\.[a-zA-Z0-9]*$' >/dev/null; then
+	if [ ! -z "$rpro_ssl_reg_email" -a "$rpro_ssl_reg_email" != " " ]; then
 		rpro_ssl_reg_email_valid=1		
 	else
 		rpro_ssl_form_valid=0
@@ -1352,7 +1353,8 @@ red5pro_com_login_form()
 	read -s rpro_passcode
 
 	# simple validate email
-	if echo "${rpro_email}" | grep '^[a-zA-Z0-9]*@[a-zA-Z0-9]*\.[a-zA-Z0-9]*$' >/dev/null; then
+	# if echo "${rpro_email}" | grep '^[a-zA-Z0-9]*@[a-zA-Z0-9]*\.[a-zA-Z0-9]*$' >/dev/null; then
+	if [ ! -z "$rpro_email" -a "$rpro_email" != " " ]; then
 		rpro_email_valid=1		
 	else
 		rpro_form_valid=0
