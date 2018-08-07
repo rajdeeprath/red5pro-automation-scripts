@@ -2596,7 +2596,9 @@ check_current_rpro()
 
 
 	if [ ! -d $DEFAULT_RPRO_PATH ]; then
+		if [ ! "$check_silent" -eq 1 ] ; then
   		lecho "No Red5 Pro installation found at install location : $DEFAULT_RPRO_PATH"
+		fi
 	else
 		red5pro_ini="$DEFAULT_RPRO_PATH/conf/red5.ini" 
 
