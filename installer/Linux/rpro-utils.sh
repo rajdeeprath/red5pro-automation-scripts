@@ -662,11 +662,11 @@ has_ssl_cert_menu_read_options(){
 	reuse_existing_ssl_cert=0
 
 	local choice
-	read -p "Enter choice [ 1 - 5 | 0 to exit]] " choice
+	read -p "Enter choice [ 1 - 2 | X to exit ] " choice
 	case $choice in
 		1) sudo rm -rf /etc/letsencrypt ;;
 		2) reuse_existing_ssl_cert=1 ;;
-		3) pause ;;
+		[xX])  pause ;;		
 		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_has_ssl_cert_menu ;;
 	esac
 }
@@ -2877,7 +2877,7 @@ license_menu_read_options(){
 
 
 	local choice
-	read -p "Enter choice [ 1 - 2 | 0 to go back | X to exit] " choice
+	read -p "Enter choice [ 1 - 2 | 0 to go back | X to exit ] " choice
 	case $choice in
 		1) set_update_license 0 ;;
 		2) check_license 0 ;;
@@ -2917,12 +2917,6 @@ advance_menu()
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "1. --- CHECK EXISTING RED5 PRO INSTALLATION"
 	echo "2. --- WHICH JAVA AM I USING ?		 "
-	
-	if [[ $rpro_exists -eq 1 ]]; then
-		echo "3. --- INSTALL RED5 PRO SERVICE		 "
-		echo "4. --- UNINSTALL RED5 PRO SERVICE		 "
-	fi
-
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 	echo "0. --- BACK					 "
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
@@ -2939,26 +2933,10 @@ advance_menu_read_options(){
 
 
 	local choice
-	read -p "Enter choice [ 1 - 4 | 0 to go back | X to exit ] " choice
+	read -p "Enter choice [ 1 - 2 | 0 to go back | X to exit ] " choice
 	case $choice in
 		1) cls && check_current_rpro ;;
 		2) cls && check_java 1 ;;
-		3) 
-
-			if [[ $rpro_exists -eq 1 ]]; then
-				cls && register_rpro_as_service
-			else
-				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_utility_menu
-			fi
-			;;
-		4) 
-
-			if [[ $rpro_exists -eq 1 ]]; then
-				cls && unregister_rpro_as_service
-			else
-				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_utility_menu
-			fi
-			;;
 		0) cls && main ;;
 		[xX])  exit 0;;
 		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_utility_menu ;;
@@ -3051,12 +3029,12 @@ simple_menu_read_options(){
 
 	if [[ $rpro_exists -eq 1 ]]; then
 		if is_service_installed; then
-		read -p "Enter choice [ 1 - 9 | | 0 to go back | X to exit] " choice
+		read -p "Enter choice [ 1 - 9 | 0 to go back | X to exit ] " choice
 		else
-		read -p "Enter choice [ 1 - 8 | | 0 to go back | X to exit] " choice
+		read -p "Enter choice [ 1 - 8 | 0 to go back | X to exit ] " choice
 		fi
 	else
-		read -p "Enter choice [ 1 - 2 | | 0 to go back | X to exit] " choice
+		read -p "Enter choice [ 1 - 2 | 0 to go back | X to exit ] " choice
 	fi
 	
 	case $choice in
