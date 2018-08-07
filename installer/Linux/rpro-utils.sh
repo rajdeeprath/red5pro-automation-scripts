@@ -3012,15 +3012,16 @@ simple_menu()
 		echo "5. --- SSL CERT INSTALLER (Letsencrypt) 		"
 		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 		echo "6. --- START RED5 PRO			"
-		echo "7. --- STOP RED5 PRO			"
-		echo "8. --- RESTART RED5 PRO			"
+		echo "7. --- STOP RED5 PRO			"		
 		#printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 		#echo "------ RED5 PRO SERVICE OPTIONS		"
-		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 		if is_service_installed; then
-			echo "9. --- REMOVE SERVICE			"
+		echo "8. --- RESTART RED5 PRO			"
+		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+		echo "9. --- REMOVE SERVICE			"
 		else
-			echo "9. --- INSTALL AS SERVICE			"
+		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+		echo "8. --- INSTALL AS SERVICE			"
 		fi
 
 	fi
@@ -3049,7 +3050,11 @@ simple_menu_read_options(){
 	local choice
 
 	if [[ $rpro_exists -eq 1 ]]; then
+		if is_service_installed; then
 		read -p "Enter choice [ 1 - 9 | | 0 to go back | X to exit] " choice
+		else
+		read -p "Enter choice [ 1 - 8 | | 0 to go back | X to exit] " choice
+		fi
 	else
 		read -p "Enter choice [ 1 - 2 | | 0 to go back | X to exit] " choice
 	fi
@@ -3096,18 +3101,21 @@ simple_menu_read_options(){
 			fi
 			;;
 		8)
-
-			if [[ $rpro_exists -eq 1 ]]; then
-				cls && restart_red5pro_service
+			if is_service_installed; then
+				if [[ $rpro_exists -eq 1 ]]; then
+					cls && restart_red5pro_service
+				else
+					echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu
+				fi
 			else
-				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu
+				cls && register_rpro_as_service
 			fi
 			;;
 		9)
 			if is_service_installed; then
 				cls && unregister_rpro_as_service
 			else
-				cls && register_rpro_as_service
+				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu
 			fi
 			;;
 		0) cls && main ;;
