@@ -3045,7 +3045,13 @@ simple_menu_read_options(){
 
 
 	local choice
-	read -p "Enter choice [ 1 - 9 | | 0 to go back | X to exit] " choice
+
+	if [[ $rpro_exists -eq 1 ]]; then
+		read -p "Enter choice [ 1 - 9 | | 0 to go back | X to exit] " choice
+	else
+		read -p "Enter choice [ 1 - 2 | | 0 to go back | X to exit] " choice
+	fi
+	
 	case $choice in
 		# 1) check_current_rpro ;;
 		1) cls && auto_install_rpro ;;
@@ -3625,4 +3631,3 @@ write_log "	NEW INSTALLER SESSION
 
 	"
 main
-
