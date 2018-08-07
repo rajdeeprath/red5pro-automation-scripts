@@ -14,7 +14,8 @@ RPRO_LOG_FILE=$PWD/$RPRO_LOG_FILE_NAME
 RPRO_OS_TYPE=
 OS_DEB="DEBIAN"
 OS_RHL="REDHAT"
- 
+
+RPRO_INSTALL_AS_SERVICE=true 
 RPRO_SERVICE_LOCATION_V1=/etc/init.d
 RPRO_SERVICE_NAME_V1=red5pro 
 RPRO_SERVICE_LOCATION_V2=/lib/systemd/system
@@ -939,8 +940,7 @@ ssl_cert_request_form()
 
 
 	# simple validate email
-	# if echo "${rpro_ssl_reg_email}" | grep '^[a-zA-Z0-9]*@[a-zA-Z0-9]*\.[a-zA-Z0-9]*$' >/dev/null; then
-	if [ ! -z "$rpro_ssl_reg_email" -a "$rpro_ssl_reg_email" != " " ]; then
+	if isEmailValid "${rpro_ssl_reg_email}"; then
 		rpro_ssl_reg_email_valid=1		
 	else
 		rpro_ssl_form_valid=0
@@ -1353,8 +1353,7 @@ red5pro_com_login_form()
 	read -s rpro_passcode
 
 	# simple validate email
-	# if echo "${rpro_email}" | grep '^[a-zA-Z0-9]*@[a-zA-Z0-9]*\.[a-zA-Z0-9]*$' >/dev/null; then
-	if [ ! -z "$rpro_email" -a "$rpro_email" != " " ]; then
+	if isEmailValid "${rpro_email}"; then
 		rpro_email_valid=1		
 	else
 		rpro_form_valid=0
@@ -1827,29 +1826,36 @@ install_rpro_zip()
 
 
 	# Installing red5 service
-	echo "For Red5 Pro to autostart with operating system, it needs to be registered as a service"
-	read -r -p "Do you want to register Red5 Pro service now? [y/N] " response
+	if $RPRO_INSTALL_AS_SERVICE; then			
 
-	case $response in
-	[yY][eE][sS]|[yY]) 
-		
-		lecho "Registering Red5 Pro as a service"
+		echo "For Red5 Pro to autostart with operating system, it needs to be registered as a service"
+		read -r -p "Do you want to register Red5 Pro service now? [y/N] " response
 
-		sleep 2
-		register_rpro_service
+		case $response in
+		[yY][eE][sS]|[yY]) 
 		
-		if [ "$rpro_service_install_success" -eq 0 ]; then
-		lecho_err "Failed to register Red5 Pro service. Something went wrong!! Try again or contact support!"
-		pause
-		fi
-	;;
-	*)
-	;;
-	esac
+			lecho "Registering Red5 Pro as a service"
+
+			sleep 2
+			register_rpro_service
+		
+			if [ "$rpro_service_install_success" -eq 0 ]; then
+			lecho_err "Failed to register Red5 Pro service. Something went wrong!! Try again or contact support!"
+			pause
+			fi
+		;;
+		*)
+		;;
+		esac
 
 	
-	# All Done
-	lecho "Red5 Pro service is now installed on your system. You can start / stop it with from the menu".
+		# All Done
+		lecho "Red5 Pro service is now installed on your system. You can start / stop it with from the menu".
+	else
+		
+		lecho "Red5 Pro service auto-install is disabled. You can manually register Red5 Pro as service from the menu.".
+	fi
+	
 
 	# Moving to home directory	
 	cd ~
@@ -2305,6 +2311,16 @@ restart_red5pro_service_v2()
 
 
 
+is_service_installed()
+{
+	if [ ! -f "$RPRO_SERVICE_LOCATION/$RPRO_SERVICE_NAME" ];	then
+	false
+	else
+	true
+	fi
+}
+
+
 start_red5pro_service()
 {
 	cd ~
@@ -2574,7 +2590,7 @@ check_current_rpro()
 
 
 	if [ ! "$check_silent" -eq 1 ] ; then
-		lecho "Looking for Red5 Pro at install install location..."
+		lecho "Looking for Red5 Pro at install location..."
 		sleep 2
 	fi
 
@@ -2847,7 +2863,7 @@ licence_menu()
 	echo "1. ADD OR UPDATE LICENSE"
 	echo "2. VIEW LICENSE"
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	echo "3. BACK TO MAIN MENU"
+	echo "0. BACK"
 	echo "			  "   
 }
 
@@ -2859,11 +2875,11 @@ license_menu_read_options(){
 
 
 	local choice
-	read -p "Enter choice [ 1 - 3] " choice
+	read -p "Enter choice [ 1 - 2 | 0 to go back | X to exit] " choice
 	case $choice in
 		1) set_update_license 0 ;;
 		2) check_license 0 ;;
-		3) 
+		0) 
 		if [ $RPRO_MODE -eq  1]; then 
 		show_utility_menu 
 		else 
@@ -2906,10 +2922,10 @@ advance_menu()
 	fi
 
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	echo "5. --- BACK TO MODE SELECTION"
+	echo "0. --- BACK					 "
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	echo "0. --- Exit					 "
-	echo "                             		 "
+	echo "X. --- Exit					 "
+	echo "                             		 	 "
 
 }
 
@@ -2921,7 +2937,7 @@ advance_menu_read_options(){
 
 
 	local choice
-	read -p "Enter choice [ 1 - 5 | 0 to exit]] " choice
+	read -p "Enter choice [ 1 - 4 | 0 to go back | X to exit ] " choice
 	case $choice in
 		1) cls && check_current_rpro ;;
 		2) cls && check_java 1 ;;
@@ -2941,8 +2957,8 @@ advance_menu_read_options(){
 				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_utility_menu
 			fi
 			;;
-		5) cls && main ;;
-		0) exit 0;;
+		0) cls && main ;;
+		[xX])  exit 0;;
 		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_utility_menu ;;
 	esac
 }
@@ -2991,20 +3007,29 @@ simple_menu()
 		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 		echo "3. --- REMOVE RED5 PRO INSTALLATION	"
 		echo "4. --- ADD / UPDATE RED5 PRO LICENSE	"
-		echo "5. --- SSL CERT INSTALLER 		"
-		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-		echo "------ RED5 PRO SERVICE OPTIONS		"
+		echo "5. --- SSL CERT INSTALLER (Letsencrypt) 		"
 		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
 		echo "6. --- START RED5 PRO			"
 		echo "7. --- STOP RED5 PRO			"
 		echo "8. --- RESTART RED5 PRO			"
+		#printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
+		#echo "------ RED5 PRO SERVICE OPTIONS		"
+		printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+		if is_service_installed; then
+			echo "9. --- REMOVE SERVICE			"
+		else
+			echo "9. --- INSTALL AS SERVICE			"
+		fi
+
 	fi
 
 
+
+
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	echo "9. --- BACK TO MODE SELECTION"
+	echo "0. --- BACK"
 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-	echo "0. --- Exit				"
+	echo "X. --- Exit				"
 	echo "                             		"
 
 }
@@ -3020,7 +3045,7 @@ simple_menu_read_options(){
 
 
 	local choice
-	read -p "Enter choice [ 1 - 7 | 0 to exit] " choice
+	read -p "Enter choice [ 1 - 9 | | 0 to go back | X to exit] " choice
 	case $choice in
 		# 1) check_current_rpro ;;
 		1) cls && auto_install_rpro ;;
@@ -3070,8 +3095,15 @@ simple_menu_read_options(){
 				echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu
 			fi
 			;;
-		9) cls && main ;;
-		0) exit 0;;
+		9)
+			if is_service_installed; then
+				cls && unregister_rpro_as_service
+			else
+				cls && register_rpro_as_service
+			fi
+			;;
+		0) cls && main ;;
+		[xX])  exit 0;;
 		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_simple_menu ;;
 	esac
 }
@@ -3199,6 +3231,9 @@ detect_system()
 	fi
 
 
+	# Service installation
+	if $RPRO_INSTALL_AS_SERVICE; then			
+
 	# Service installer mode selection
 	if [ "$RPRO_SERVICE_VERSION" -eq "1" ]; then
 	RPRO_SERVICE_LOCATION=$RPRO_SERVICE_LOCATION_V1
@@ -3210,6 +3245,9 @@ detect_system()
 	echo -e "* Service Deployment : \e[36mModern\e[m"
 	fi
 
+	else
+	echo -e "* Service Deployment : \e[36mDisabled\e[m"
+	fi
 
 	write_log "OS TYPE $RPRO_OS_TYPE"
 }
@@ -3259,7 +3297,7 @@ welcome_menu()
 	echo "                             		"
 	echo "2. UTILITY MODE				"
 	echo "                             		"
-	echo "0. Exit					"
+	echo "X. Exit					"
 	echo "                             		"
 }
 
@@ -3270,11 +3308,11 @@ read_welcome_menu_options()
 {
 	
 	local choice
-	read -p "Enter choice [ 1 - 2 | 0 to exit] " choice
+	read -p "Enter choice [ 1 - 2 | X to exit] " choice
 	case $choice in
 		1) simple_usage_mode ;;
 		2) utility_usage_mode ;;
-		0) exit 0;;
+		[xX])  exit 0;;
 		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && main ;;
 	esac
 }
@@ -3566,9 +3604,15 @@ repo_has_required_java_rhl()
 
 #################################################################################################
 
-# RED => echo -e "\e[31m Home directory\e[m"
-# RED in yello echo -e "\e[41m Home directory\e[m"
-# Soothing blue and white echo -e "\e[44m ----------- MANAGE LICENSE ------------- \e[m"
+############################## UTILITY FUNCTIONS ##################################
+
+
+function isEmailValid() {
+      regex="^([A-Za-z]+[A-Za-z0-9]*((\.|\-|\_)?[A-Za-z]+[A-Za-z0-9]*){1,})@(([A-Za-z]+[A-Za-z0-9]*)+((\.|\-|\_)?([A-Za-z]+[A-Za-z0-9]*)+){1,})+\.([A-Za-z]{2,})+"
+      [[ "${1}" =~ $regex ]]
+}
+
+
 
 
 # Load configuration
@@ -3581,5 +3625,4 @@ write_log "	NEW INSTALLER SESSION
 
 	"
 main
-
 
