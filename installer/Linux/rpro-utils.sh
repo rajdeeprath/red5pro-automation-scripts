@@ -26,6 +26,12 @@ RPRO_SERVICE_NAME=
 # init.d(1) vs modern jsvc(2)
 RED5PRO_SERVICE_VERSION=2
 
+# 0 For standard, 1 for auto (unattended)
+RED5PRO_INSTALL_MODE=0
+
+# 1 to enable autoscale install options, 0 to disable
+RED5PRO_INSTALL_FOR_AUTOSCALING=0
+
 RPRO_RED5SH=red5.sh
 RPRO_SERVICE_INSTALLER=/usr/sbin/update-rc.d
 RPRO_IS_64_BIT=0
@@ -266,6 +272,21 @@ check_unzip()
 
 
 
+check_ntp()
+{
+	write_log "Checking for ntp"			
+	ntp_check_success=0
+
+	if isinstalled ntp; then
+	ntp_check_success=1
+	write_log "ntp was found"		
+	else
+	ntp_check_success=0
+	lecho "ntp not found."				
+	fi
+}
+
+
 
 # Public
 
@@ -282,7 +303,6 @@ check_git()
 	lecho "git utility not found."
 	fi
 }
-
 
 
 
@@ -436,6 +456,19 @@ install_unzip()
 
 
 
+install_ntp()
+{
+	write_log "Installing ntp"
+
+	if isDebian; then
+	install_ntp_deb	
+	else
+	install_ntp_rhl
+	fi		
+}
+
+
+
 # Private
 install_unzip_deb()
 {
@@ -459,6 +492,33 @@ install_unzip_rhl()
 
 	install_unzip="$(which unzip)";
 	lecho "Unzip installed at $install_unzip"
+}
+
+
+
+# Private
+install_ntp_deb()
+{
+	write_log "Installing ntp on debian"
+
+	sudo apt-get install -y ntp
+
+	install_ntp="$(which ntp)";
+	lecho "ntp installed at $install_ntp"
+}
+
+
+
+# Private
+install_ntp_rhl()
+{
+	write_log "Installing ntp on rhle"
+
+	# yup update
+	sudo yum -y install ntp
+
+	install_ntp="$(which ntp)";
+	lecho "ntp installed at $install_ntp"
 }
 
 
@@ -1444,7 +1504,12 @@ download_from_url()
 
 	latest_rpro_download_success=0
 	rpro_zip=
-	RED5PRO_DOWNLOAD_URL=
+
+	# Here we configure the url from where red5 pro should be downloaded (if provided)
+
+	if [ -z "$RED5PRO_DOWNLOAD_URL" ]; then
+		RED5PRO_DOWNLOAD_URL=
+	fi
 
 	lecho "Downloading Red5 Pro from url"
 	
@@ -1826,10 +1891,16 @@ install_rpro_zip()
 
 
 	# Installing red5 service
-	if $RED5PRO_INSTALL_AS_SERVICE; then			
+	if $RED5PRO_INSTALL_AS_SERVICE; then
 
-		echo "For Red5 Pro to autostart with operating system, it needs to be registered as a service"
-		read -r -p "Do you want to register Red5 Pro service now? [y/N] " response
+		if [[ $RED5PRO_INSTALL_MODE -eq 0 ]]; then			
+
+			echo "For Red5 Pro to autostart with operating system, it needs to be registered as a service"
+			read -r -p "Do you want to register Red5 Pro service now? [y/N] " response
+		else
+			response = "Y";
+		fi
+
 
 		case $response in
 		[yY][eE][sS]|[yY]) 
@@ -3316,8 +3387,22 @@ read_welcome_menu_options()
 
 main()
 {
-	welcome_menu
-	read_welcome_menu_options
+	cls
+
+	if [[ $RED5PRO_INSTALL_MODE -eq 0 ]]; then
+		welcome_menu
+		read_welcome_menu_options
+	else
+		detect_system
+		lecho "Auto selecting Basic mode"
+		RPRO_MODE=0
+		
+		sleep 2
+
+		cls && auto_install_rpro_url
+	fi
+
+
 }
 
 
@@ -3339,6 +3424,11 @@ prerequisites()
 	prerequisites_unzip
 	prerequisites_wget
 	prerequisites_bc
+
+	if [[ $RED5PRO_INSTALL_FOR_AUTOSCALING -eq 1 ]]; then
+		prerequisites_ntp
+	fi
+	
 }
 
 
@@ -3411,6 +3501,20 @@ prerequisites_unzip()
 		sleep 2
 
 		install_unzip
+	fi 
+}
+
+
+prerequisites_ntp()
+{
+	check_ntp
+
+
+	if [[ $ntp_check_success -eq 0 ]]; then
+		echo "Installing ntp..."
+		sleep 2
+
+		install_ntp
 	fi 
 }
 
