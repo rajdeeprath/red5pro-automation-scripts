@@ -1931,9 +1931,13 @@ install_rpro_zip()
 	# Moving to home directory	
 	cd ~
 
-	if [ $# -eq 0 ]
-	  then
-	    pause
+	if [ $# -eq 0 ];  then
+		if [[ $RED5PRO_INSTALL_MODE -eq 0 ]]; then
+	    		pause
+		else
+			lecho "Installation completed successfully!"	
+			exit 0;;
+		fi
 	fi
 	
 }
@@ -2948,7 +2952,7 @@ license_menu_read_options(){
 
 
 	local choice
-	read -p "Enter choice [ 1 - 2 | 0 to go back | X to exit ] " choice
+	read -p "Enter choice [ 1 - 2 | 0 to go back ] " choice
 	case $choice in
 		1) set_update_license 0 ;;
 		2) check_license 0 ;;
@@ -3720,7 +3724,8 @@ load_configuration
 
 # Start application
 write_log "====================================="
-write_log "	NEW INSTALLER SESSION	
+write_log "	NEW INSTALLER SESSION		"
 
-	"
+
+# <script> -m <mode> -i <install-from> -p <comma-separated-params>
 main
