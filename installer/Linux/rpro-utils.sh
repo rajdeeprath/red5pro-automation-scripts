@@ -1634,9 +1634,10 @@ auto_install_rpro_url()
 	fi
 
 	
-	if [ $# -eq 0 ]
-	  then
-	    pause
+	if [[ $RED5PRO_INSTALL_MODE -eq 0 ]]; then
+		pause
+	else
+		exit 0
 	fi
 	
 }
@@ -1931,13 +1932,9 @@ install_rpro_zip()
 	# Moving to home directory	
 	cd ~
 
+
 	if [ $# -eq 0 ];  then
-		if [[ $RED5PRO_INSTALL_MODE -eq 0 ]]; then
-	    		pause
-		else
-			lecho "Installation completed successfully!"	
-			exit 0
-		fi
+    		pause
 	fi
 	
 }
@@ -3796,4 +3793,3 @@ if [ $# -gt 0 ];  then
 else
 	cls && main
 fi
-
