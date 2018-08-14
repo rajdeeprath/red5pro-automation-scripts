@@ -1898,7 +1898,7 @@ install_rpro_zip()
 			echo "For Red5 Pro to autostart with operating system, it needs to be registered as a service"
 			read -r -p "Do you want to register Red5 Pro service now? [y/N] " response
 		else
-			response = "Y";
+			response="Y"
 		fi
 
 
@@ -1936,7 +1936,7 @@ install_rpro_zip()
 	    		pause
 		else
 			lecho "Installation completed successfully!"	
-			exit 0;;
+			exit 0
 		fi
 	fi
 	
@@ -3727,5 +3727,73 @@ write_log "====================================="
 write_log "	NEW INSTALLER SESSION		"
 
 
-# <script> -m <mode> -i <install-from> -p <comma-separated-params>
-main
+# sudo ./rpro-utils.sh -m 1 -o installurl -p <myurl>
+
+if [ $# -gt 0 ];  then
+	cls
+	
+	params_length=0
+	
+	while getopts m:o:p: option
+	do
+	case "${option}"
+	in
+	m) opmode=${OPTARG};;
+	o) operation=${OPTARG};;
+	p) params=${OPTARG};;
+	esac
+	done
+
+	detect_system
+
+	if [[ $opmode -eq 0 ]]; then
+		RED5PRO_INSTALL_MODE=0
+		cls && main
+	else
+
+
+		if [ -z ${params+x} ]; then
+			lecho "No params provided"
+		else
+			IFS=' '
+			read -ra PARAMS_ARR <<< "$params"
+			params_length=${#PARAMS_ARR[@]}
+		fi
+		
+
+		if [ -z ${operation+x} ]; then
+			lecho "WARNING! No 'operation' specified!!"
+		else
+
+			RED5PRO_INSTALL_MODE=1
+
+			case "$operation" in
+				installsite)
+					lecho "installsite : command is not yet supported"
+					sleep 2 && exit 1
+					#cls && auto_install_rpro
+					;;
+				 
+				installurl)
+					lecho "installurl"
+					RPRO_MODE=0
+					if [[ $params_length -gt 0 ]]; then
+						RED5PRO_DOWNLOAD_URL=${PARAMS_ARR[0]}
+						cls && auto_install_rpro_url
+					else
+						lecho "'installurl' requires one parameter (url of red5 pro archive to install from)"	
+						sleep 2 && exit 1
+					fi
+					;;
+				 
+				*)
+				    lecho $"Unknown operation $operation"
+				    exit 1
+			 
+			esac
+		fi
+	fi
+else
+	cls && main
+fi
+
