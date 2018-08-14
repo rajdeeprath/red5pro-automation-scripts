@@ -3739,13 +3739,14 @@ if [ $# -gt 0 ];  then
 	
 	params_length=0
 	
-	while getopts m:o:p: option
+	while getopts m:o:p:s: option
 	do
 	case "${option}"
 	in
-	mode) opmode=${OPTARG};;
-	op) operation=${OPTARG};;
-	args) params=${OPTARG};;
+	m) opmode=${OPTARG};;
+	o) operation=${OPTARG};;
+	p) params=${OPTARG};;
+	s) autostart=${OPTARG};;
 	esac
 	done
 
@@ -3756,6 +3757,17 @@ if [ $# -gt 0 ];  then
 		cls && main
 	else
 
+		if [ -z ${autostart+x} ]; then
+			write_log "No autostart flag provided"
+		else
+			if [ $autostart -eq 0 ];  then
+				lecho "Start after install disabled"
+				RED5PRO_START_AFTER_INSTALL=false
+			else
+				lecho "Start after install enabled"
+				RED5PRO_START_AFTER_INSTALL=true
+			fi
+		fi
 
 		if [ -z ${params+x} ]; then
 			lecho "No params provided"
@@ -3784,7 +3796,7 @@ if [ $# -gt 0 ];  then
 					RPRO_MODE=0
 					if [[ $params_length -gt 0 ]]; then
 						RED5PRO_DOWNLOAD_URL=${PARAMS_ARR[0]}
-						cls && auto_install_rpro_url
+						sleep 2 && cls && auto_install_rpro_url
 					else
 						lecho "'installurl' requires one parameter (url of red5 pro archive to install from)"	
 						sleep 2 && exit 1
