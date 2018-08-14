@@ -15,7 +15,8 @@ RPRO_OS_TYPE=
 OS_DEB="DEBIAN"
 OS_RHL="REDHAT"
 
-RED5PRO_INSTALL_AS_SERVICE=true 
+RED5PRO_INSTALL_AS_SERVICE=true
+RED5PRO_START_AFTER_INSTALL=false
 RPRO_SERVICE_LOCATION_V1=/etc/init.d
 RPRO_SERVICE_NAME_V1=red5pro 
 RPRO_SERVICE_LOCATION_V2=/lib/systemd/system
@@ -1912,8 +1913,8 @@ install_rpro_zip()
 			register_rpro_service
 		
 			if [ "$rpro_service_install_success" -eq 0 ]; then
-			lecho_err "Failed to register Red5 Pro service. Something went wrong!! Try again or contact support!"
-			pause
+				lecho_err "Failed to register Red5 Pro service. Something went wrong!! Try again or contact support!"
+				pause				
 			fi
 		;;
 		*)
@@ -1923,6 +1924,13 @@ install_rpro_zip()
 	
 		# All Done
 		lecho "Red5 Pro service is now installed on your system. You can start / stop it with from the menu".
+
+		# Auto start
+		if [ "$rpro_service_install_success" -eq 1 ]; then
+			if $RED5PRO_INSTALL_AS_SERVICE; then
+				start_red5pro_service 1
+			fi
+		fi
 	else
 		
 		lecho "Red5 Pro service auto-install is disabled. You can manually register Red5 Pro as service from the menu.".
@@ -3735,9 +3743,9 @@ if [ $# -gt 0 ];  then
 	do
 	case "${option}"
 	in
-	m) opmode=${OPTARG};;
-	o) operation=${OPTARG};;
-	p) params=${OPTARG};;
+	mode) opmode=${OPTARG};;
+	op) operation=${OPTARG};;
+	args) params=${OPTARG};;
 	esac
 	done
 
