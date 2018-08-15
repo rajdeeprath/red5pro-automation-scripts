@@ -1759,13 +1759,26 @@ install_rpro_zip()
 	lecho "Moving files to install location : $rpro_loc"
 
 
+	# Identify archive type and move accordingly
+
 	if [[ $# -gt 1 ]]; then
 
-		if [ ! -d "$rpro_loc" ]; then
-		  sudo mkdir -p $rpro_loc
+		if isSingleLevel $unzip_dest; then
+			
+			# Single level archive -> top level manual zip
+			if [ ! -d "$rpro_loc" ]; then
+			  sudo mkdir -p $rpro_loc
+			fi
+
+			mv -v $unzip_dest/* $rpro_loc
+
+		else
+			# Two level archive -> like at red5pro.com
+			rpro_loc=$DEFAULT_RPRO_PATH
+			mv -v $unzip_dest/* $rpro_loc
 		fi
 
-		sudo mv -v $unzip_dest/* $rpro_loc
+
 	else
 		# Move to actual install location 
 		rpro_loc=$DEFAULT_RPRO_PATH
@@ -1865,6 +1878,20 @@ install_rpro_zip()
 	    pause
 	fi
 	
+}
+
+
+
+isSingleLevel()
+{
+	local rpro_tmp=$1
+	local count=$(find $rpro_tmp -maxdepth 1 -type d | wc -l)
+
+	if [ $count -gt 2 ]; then
+		true
+	else
+		false
+	fi
 }
 
 
@@ -2877,7 +2904,7 @@ license_menu_read_options(){
 
 
 	local choice
-	read -p "Enter choice [ 1 - 2 | 0 to go back | X to exit ] " choice
+	read -p "Enter choice [ 1 - 2 | 0 to go back ] " choice
 	case $choice in
 		1) set_update_license 0 ;;
 		2) check_license 0 ;;
