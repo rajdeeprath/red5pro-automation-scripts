@@ -61,9 +61,12 @@ RED5PRO_DEFAULT_MEMORY_PATTERN="-Xmx2g"
 
 
 
+
+
 ######################################################################################
 
 ################################## LOGGER ############################################
+
 
 
 
@@ -166,8 +169,6 @@ pause()
  	show_simple_menu
 	fi
 }
-
-
 
 
 
@@ -1368,7 +1369,6 @@ red5pro_com_login_form()
 		lecho "Invalid password string!"
 	fi
 
-
 	# if all params are valid
 	if [ "$rpro_form_valid" -eq "1" ]; then
 	
@@ -1457,7 +1457,6 @@ download_from_url()
 		echo "Enter the Red5 Pro archive file URL source";
 		read RED5PRO_DOWNLOAD_URL
 	fi
-
 
 	lecho "Attempting to download Red5 Pro archive file to $RED5PRO_DEFAULT_DOWNLOAD_FOLDER"
 
@@ -2920,6 +2919,7 @@ license_menu_read_options(){
 
 	local choice
 	read -p "Enter choice [ 1 - 2 | 0 to go back ] " choice
+
 	case $choice in
 		1) set_update_license 0 ;;
 		2) check_license 0 ;;
@@ -2976,6 +2976,7 @@ advance_menu_read_options(){
 
 	local choice
 	read -p "Enter choice [ 1 - 2 | 0 to go back | X to exit ] " choice
+
 	case $choice in
 		1) cls && check_current_rpro ;;
 		2) cls && check_java 1 ;;
@@ -3067,7 +3068,7 @@ simple_menu()
 simple_menu_read_options(){
 
 
-	local choice
+	local choice	
 
 	if [[ $rpro_exists -eq 1 ]]; then
 		if is_service_installed; then
@@ -3156,6 +3157,8 @@ simple_menu_read_options(){
 
 load_configuration()
 {
+	sudo sleep 0
+
 
 	if [ ! -f $RPRO_CONFIGURATION_FILE ]; then
 
@@ -3648,17 +3651,6 @@ function isEmailValid() {
       regex="^([A-Za-z]+[A-Za-z0-9]*((\.|\-|\_)?[A-Za-z]+[A-Za-z0-9]*){1,})@(([A-Za-z]+[A-Za-z0-9]*)+((\.|\-|\_)?([A-Za-z]+[A-Za-z0-9]*)+){1,})+\.([A-Za-z]{2,})+"
       [[ "${1}" =~ $regex ]]
 }
-
-
-function isRoot()
-{
-	if [[ $EUID > 0 ]]; then
-	 false
-	else
-	 true
-	fi
-}
-
 
 
 
