@@ -367,7 +367,7 @@ install_java()
 install_java_deb()
 {
 	lecho "Installing Java for Debian";
-	sudo apt-get install -y default-jre
+	apt-get install -y default-jre
 
 }
 
@@ -377,7 +377,7 @@ install_java_deb()
 install_java_rhl()
 {
 	lecho "Installing Java for CentOs";
-	sudo yum -y install java
+	yum -y install java
 }
 
 
@@ -401,7 +401,7 @@ install_jsvc()
 install_jsvc_deb()
 {
 	write_log "Installing jsvc on debian"
-	sudo apt-get install -y jsvc
+	apt-get install -y jsvc
 
 	install_jsvc="$(which jsvc)";
 	lecho "jsvc installed at $install_jsvc"
@@ -413,7 +413,7 @@ install_jsvc_deb()
 install_jsvc_rhl()
 {
 	write_log "Installing jsvc on rhl"
-	sudo yum -y install jsvc
+	yum -y install jsvc
 
 	install_jsvc="$(which jsvc)";
 	lecho "jsvc installed at $install_jsvc"
@@ -441,7 +441,7 @@ install_unzip_deb()
 {
 	write_log "Installing unzip on debian"
 
-	sudo apt-get install -y unzip
+	apt-get install -y unzip
 
 	install_unzip="$(which unzip)";
 	lecho "Unzip installed at $install_unzip"
@@ -455,7 +455,7 @@ install_unzip_rhl()
 	write_log "Installing unzip on rhle"
 
 	# yup update
-	sudo yum -y install unzip
+	yum -y install unzip
 
 	install_unzip="$(which unzip)";
 	lecho "Unzip installed at $install_unzip"
@@ -511,7 +511,7 @@ install_git_deb()
 {
 	write_log "Installing git on debian"
 
-	sudo apt-get install -y git
+	apt-get install -y git
 
 	install_git="$(which git)";
 	lecho "git installed at $install_git"
@@ -522,7 +522,7 @@ install_git_rhl()
 {
 	write_log "Installing git on rhle"
 
-	sudo yum -y install git
+	yum -y install git
 
 	install_git="$(which git)";
 	lecho "git installed at $install_git"
@@ -534,7 +534,7 @@ install_wget_deb()
 {
 	write_log "Installing wget on debian"
 
-	sudo apt-get install -y wget
+	apt-get install -y wget
 
 	install_wget="$(which wget)";
 	lecho "wget installed at $install_wget"
@@ -548,7 +548,7 @@ install_wget_rhl()
 	write_log "Installing wget on rhle"
 
 	# yup update
-	sudo yum -y install wget
+	yum -y install wget
 
 	install_wget="$(which wget)";
 	lecho "wget installed at $install_wget"
@@ -562,7 +562,7 @@ install_bc_deb()
 {
 	write_log "Installing bc on debian"
 
-	sudo apt-get install -y bc
+	apt-get install -y bc
 
 	install_bc="$(which bc)";
 	lecho "bc installed at $install_bc"
@@ -576,7 +576,7 @@ install_bc_rhl()
 	write_log "Installing bc on rhle"
 
 	# yup update
-	sudo yum -y install bc
+	yum -y install bc
 
 	install_bc="$(which bc)";
 	lecho "bc installed at $install_bc"
@@ -664,7 +664,7 @@ has_ssl_cert_menu_read_options(){
 	local choice
 	read -p "Enter choice [ 1 - 2 | X to exit ] " choice
 	case $choice in
-		1) sudo rm -rf /etc/letsencrypt ;;
+		1) rm -rf /etc/letsencrypt ;;
 		2) reuse_existing_ssl_cert=1 ;;
 		[xX])  pause ;;		
 		*) echo -e "\e[41m Error: Invalid choice\e[m" && sleep 2 && show_has_ssl_cert_menu ;;
@@ -1084,7 +1084,7 @@ remove_letsencrypt_ssl_config_domain()
 	read_ssl_config_domain_properties
 
 	if [ -d "/etc/letsencrypt/live/$letsencrypt_ssl_cert_domain_value" ]; then
-		sudo rm -rf "/etc/letsencrypt/live/$letsencrypt_ssl_cert_domain_value"
+		rm -rf "/etc/letsencrypt/live/$letsencrypt_ssl_cert_domain_value"
 		lecho "SSL Certificate information for $letsencrypt_ssl_cert_domain_value was removed"
 		sleep 2
 	fi
@@ -1325,7 +1325,7 @@ download_latest()
 	lecho "Downloading latest Red5 Pro from red5pro.com"
 	
 	# create tmp directory
-	#dir=`sudo mktemp -d` && cd $dir
+	#dir=`mktemp -d` && cd $dir
 	dir="$RED5PRO_DEFAULT_DOWNLOAD_FOLDER"
 	cd $dir
 
@@ -1449,7 +1449,7 @@ download_from_url()
 	lecho "Downloading Red5 Pro from url"
 	
 	# create tmp directory
-	#dir=`sudo mktemp -d` && cd $dir
+	#dir=`mktemp -d` && cd $dir
 	dir="$RED5PRO_DEFAULT_DOWNLOAD_FOLDER"
 	cd $dir
 
@@ -1660,37 +1660,16 @@ install_rpro_zip()
 	fi
 
 	write_log "Installing Red5 Pro from zip $rpro_zip_path"
-	
 
-	if [ ! -f "$rpro_zip_path" ]; then
-		lecho "Invalid archive file path $rpro_zip_path"
+
+	if !isValidArchive $rpro_zip_path; then
+		lecho "Cannot process archive $rpro_zip_path"
 		pause;
 	fi
-
 
 	local filename=$(basename "$rpro_zip_path")
 	local extension="${filename##*.}"
 	filename="${filename%.*}"
-	local filesize=$(stat -c%s "$rpro_zip_path")
-
-
-	if [ "$filesize" -lt 30000 ]; then
-		lecho "Invalid archive file size detected for $rpro_zip_path. Probable corrupt file!"
-		pause;
-	fi
-
-
-	case "$extension" in 
-	zip|tar|gz*) 
-	    # All ok
-	    ;;	
-	*)
-	    lecho "Invalid archive type $extension"
-	    pause
-	    ;;
-	esac
-	
-
 
 	lecho "Attempting to install Red5 Pro from zip"
 
@@ -1726,7 +1705,7 @@ install_rpro_zip()
 		unregister_rpro_service
 
 		# check remove old files
-		sudo rm -rf $DEFAULT_RPRO_PATH
+		rm -rf $DEFAULT_RPRO_PATH
 
 		;;
 		*)
@@ -1767,7 +1746,7 @@ install_rpro_zip()
 			
 			# Single level archive -> top level manual zip
 			if [ ! -d "$rpro_loc" ]; then
-			  sudo mkdir -p $rpro_loc
+			  mkdir -p $rpro_loc
 			fi
 
 			mv -v $unzip_dest/* $rpro_loc
@@ -1793,11 +1772,11 @@ install_rpro_zip()
 
 	sleep 1
 
-	sudo chmod -R 755 $rpro_loc	
+	chmod -R 755 $rpro_loc	
 
-	sudo chmod -R ugo+w $rpro_loc
+	chmod -R ugo+w $rpro_loc
 
-	sudo chmod +x $rpro_loc/*.sh
+	chmod +x $rpro_loc/*.sh
 
 
 	# set path
@@ -1812,10 +1791,10 @@ install_rpro_zip()
 		sleep 1
 
 		# Delete unzipped content
-		sudo rm -rf $unzip_dest
+		rm -rf $unzip_dest
 
 		# Delete zip
-		sudo rm -rf $rpro_zip_path
+		rm -rf $rpro_zip_path
 	fi
 
 
@@ -1879,6 +1858,42 @@ install_rpro_zip()
 	fi
 	
 }
+
+
+
+
+isValidArchive()
+{
+	local archive_path=$1
+
+	if [ ! -f "$archive_path" ]; then
+		lecho "Invalid archive file path $archive_path"
+		false
+	else
+		local filename=$(basename "$archive_path")
+
+		local extension="${filename##*.}"
+		filename="${filename%.*}"
+
+		local filesize=$(stat -c%s "$archive_path")
+		
+		if [ "$filesize" -lt 30000 ]; then
+			lecho "Invalid archive file size detected for $archive_path. Probable corrupt file!"
+			false
+		else
+			case "$extension" in 
+			zip|tar|gz*) 
+			    true
+			    ;;	
+			*)
+			    lecho "Invalid archive type $extension"
+			    false
+			    ;;
+			esac
+		fi
+	fi
+}
+
 
 
 
@@ -1995,7 +2010,7 @@ esac"
 	lecho "Writing service script"
 	sleep 1
 
-	sudo touch /etc/init.d/red5pro
+	touch /etc/init.d/red5pro
 
 	# write script to file
 	echo "$service_script" > /etc/init.d/red5pro
@@ -2004,7 +2019,7 @@ esac"
 
 
 	# make service file executable
-	sudo chmod 644 /etc/init.d/red5pro
+	chmod 644 /etc/init.d/red5pro
 
 	if isDebian; then
 	register_rpro_service_deb	
@@ -2081,7 +2096,7 @@ unregister_rpro_service_v1()
 		unregister_rpro_service_rhl
 		fi
 
-		sudo rm -rf /etc/init.d/red5pro
+		rm -rf /etc/init.d/red5pro
 
 		lecho "Service removed successfully"
 		rpro_service_remove_success=0
@@ -2224,13 +2239,13 @@ WantedBy=multi-user.target
 	lecho "Writing service script"
 	sleep 1
 
-	sudo touch /lib/systemd/system/red5pro.service
+	touch /lib/systemd/system/red5pro.service
 
 	# write script to file
 	echo "$service_script" > /lib/systemd/system/red5pro.service
 
 	# make service file executable
-	sudo chmod 644 /lib/systemd/system/red5pro.service
+	chmod 644 /lib/systemd/system/red5pro.service
 
 	register_rpro_service_generic_v2
 
@@ -2297,7 +2312,7 @@ unregister_rpro_service_v2()
 		unregister_rpro_service_generic_v2
 
 		# remove service
-		sudo rm -f /lib/systemd/system/red5pro.service
+		rm -f /lib/systemd/system/red5pro.service
 
 		lecho "Service removed successfully"
 		rpro_service_remove_success=0
@@ -2579,7 +2594,7 @@ remove_rpro_installation()
 		unregister_rpro_service
 
 		# check remove folder
-		sudo rm -rf $DEFAULT_RPRO_PATH
+		rm -rf $DEFAULT_RPRO_PATH
 
 		unset RED5_HOME
 
@@ -2697,8 +2712,8 @@ backup_rpro()
 
 
 	if [ ! -d "$RPRO_BACKUP_HOME" ]; then
-	  sudo mkdir -p $RPRO_BACKUP_HOME
-	  sudo chmod ugo+w $RPRO_BACKUP_HOME
+	  mkdir -p $RPRO_BACKUP_HOME
+	  chmod ugo+w $RPRO_BACKUP_HOME
 	fi
 
 	
@@ -2719,7 +2734,7 @@ backup_rpro()
 		RPRO_BACKUP_FOLDER="$RPRO_BACKUP_HOME/$t_now"
 
 		# Copy all files to backup folder
-		sudo cp -R $DEFAULT_RPRO_PATH $RPRO_BACKUP_FOLDER
+		cp -R $DEFAULT_RPRO_PATH $RPRO_BACKUP_FOLDER
 		sleep 2
 
 		# Show notice to user that back up was saved
@@ -2729,7 +2744,7 @@ backup_rpro()
 				lecho "Your active Red5 Pro installation was backed up successfully to $RPRO_BACKUP_FOLDER"
 				lecho "You can restore any necessary file(s) later from the backup manually."
 				printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -	
-				sudo chmod -R ugo+w $RPRO_BACKUP_FOLDER
+				chmod -R ugo+w $RPRO_BACKUP_FOLDER
 				rpro_backup_success=1
 			else
 				lecho_err "Something went wrong!! Perhaps files were not copied properly"
@@ -3171,7 +3186,7 @@ load_configuration()
 
 
 	RED5PRO_DEFAULT_DOWNLOAD_FOLDER="$CURRENT_DIRECTORY/$RED5PRO_DEFAULT_DOWNLOAD_FOLDER_NAME"
-	[ ! -d foo ] && sudo mkdir -p $RED5PRO_DEFAULT_DOWNLOAD_FOLDER && sudo chmod ugo+w $RED5PRO_DEFAULT_DOWNLOAD_FOLDER
+	[ ! -d foo ] && mkdir -p $RED5PRO_DEFAULT_DOWNLOAD_FOLDER && chmod ugo+w $RED5PRO_DEFAULT_DOWNLOAD_FOLDER
 	
 
 	RED5PRO_SSL_LETSENCRYPT_FOLDER="$CURRENT_DIRECTORY/$RED5PRO_SSL_LETSENCRYPT_FOLDER_NAME"
@@ -3415,14 +3430,14 @@ prerequisites_update()
 
 prerequisites_update_deb()
 {
-	sudo apt-get update
+	apt-get update
 }
 
 
 
 prerequisites_update_rhl()
 {
-	sudo yum -y update
+	yum -y update
 }
 
 
@@ -3519,7 +3534,7 @@ postrequisites()
 postrequisites_rhl()
 {
 	write_log "Installing additional dependencies for RHLE"
-	sudo yum -y install java unzip jsvc ntp libva libvdpau
+	yum -y install java unzip jsvc ntp libva libvdpau
 }
 
 
@@ -3528,7 +3543,7 @@ postrequisites_rhl()
 postrequisites_deb()
 {
 	write_log "Installing additional dependencies for DEBIAN"
-	sudo apt-get install -y libva1 libva-drm1 libva-x11-1 libvdpau1
+	apt-get install -y libva1 libva-drm1 libva-x11-1 libvdpau1
 }
 
 
@@ -3632,6 +3647,16 @@ repo_has_required_java_rhl()
 function isEmailValid() {
       regex="^([A-Za-z]+[A-Za-z0-9]*((\.|\-|\_)?[A-Za-z]+[A-Za-z0-9]*){1,})@(([A-Za-z]+[A-Za-z0-9]*)+((\.|\-|\_)?([A-Za-z]+[A-Za-z0-9]*)+){1,})+\.([A-Za-z]{2,})+"
       [[ "${1}" =~ $regex ]]
+}
+
+
+function isRoot()
+{
+	if [[ $EUID > 0 ]]; then
+	 false
+	else
+	 true
+	fi
 }
 
 
