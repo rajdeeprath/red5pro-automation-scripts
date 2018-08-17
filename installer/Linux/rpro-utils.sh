@@ -15,7 +15,8 @@ RPRO_OS_TYPE=
 OS_DEB="DEBIAN"
 OS_RHL="REDHAT"
 
-RED5PRO_INSTALL_AS_SERVICE=true 
+RED5PRO_INSTALL_AS_SERVICE=true
+RED5PRO_START_AFTER_INSTALL=false
 RPRO_SERVICE_LOCATION_V1=/etc/init.d
 RPRO_SERVICE_NAME_V1=red5pro 
 RPRO_SERVICE_LOCATION_V2=/lib/systemd/system
@@ -25,6 +26,12 @@ RPRO_SERVICE_NAME=
 
 # init.d(1) vs modern jsvc(2)
 RED5PRO_SERVICE_VERSION=2
+
+# 0 For standard, 1 for auto (unattended)
+RED5PRO_INSTALL_MODE=0
+
+# 1 to enable autoscale install options, 0 to disable
+RED5PRO_INSTALL_FOR_AUTOSCALING=0
 
 RPRO_RED5SH=red5.sh
 RPRO_SERVICE_INSTALLER=/usr/sbin/update-rc.d
@@ -275,6 +282,21 @@ check_unzip()
 
 
 
+check_ntp()
+{
+	write_log "Checking for ntp"			
+	ntp_check_success=0
+
+	if isinstalled ntp; then
+	ntp_check_success=1
+	write_log "ntp was found"		
+	else
+	ntp_check_success=0
+	lecho "ntp not found."				
+	fi
+}
+
+
 
 # Public
 
@@ -291,7 +313,6 @@ check_git()
 	lecho "git utility not found."
 	fi
 }
-
 
 
 
@@ -445,6 +466,19 @@ install_unzip()
 
 
 
+install_ntp()
+{
+	write_log "Installing ntp"
+
+	if isDebian; then
+	install_ntp_deb	
+	else
+	install_ntp_rhl
+	fi		
+}
+
+
+
 # Private
 install_unzip_deb()
 {
@@ -468,6 +502,33 @@ install_unzip_rhl()
 
 	install_unzip="$(which unzip)";
 	lecho "Unzip installed at $install_unzip"
+}
+
+
+
+# Private
+install_ntp_deb()
+{
+	write_log "Installing ntp on debian"
+
+	sudo apt-get install -y ntp
+
+	install_ntp="$(which ntp)";
+	lecho "ntp installed at $install_ntp"
+}
+
+
+
+# Private
+install_ntp_rhl()
+{
+	write_log "Installing ntp on rhle"
+
+	# yup update
+	sudo yum -y install ntp
+
+	install_ntp="$(which ntp)";
+	lecho "ntp installed at $install_ntp"
 }
 
 
@@ -1458,7 +1519,12 @@ download_from_url()
 
 	latest_rpro_download_success=0
 	rpro_zip=
-	RED5PRO_DOWNLOAD_URL=
+
+	# Here we configure the url from where red5 pro should be downloaded (if provided)
+
+	if [ -z "$RED5PRO_DOWNLOAD_URL" ]; then
+		RED5PRO_DOWNLOAD_URL=
+	fi
 
 	lecho "Downloading Red5 Pro from url"
 	
@@ -1585,9 +1651,10 @@ auto_install_rpro_url()
 	fi
 
 	
-	if [ $# -eq 0 ]
-	  then
-	    pause
+	if [[ $RED5PRO_INSTALL_MODE -eq 0 ]]; then
+		pause
+	else
+		exit 0
 	fi
 	
 }
@@ -1838,10 +1905,16 @@ install_rpro_zip()
 
 
 	# Installing red5 service
-	if $RED5PRO_INSTALL_AS_SERVICE; then			
+	if $RED5PRO_INSTALL_AS_SERVICE; then
 
-		echo "For Red5 Pro to autostart with operating system, it needs to be registered as a service"
-		read -r -p "Do you want to register Red5 Pro service now? [y/N] " response
+		if [[ $RED5PRO_INSTALL_MODE -eq 0 ]]; then			
+
+			echo "For Red5 Pro to autostart with operating system, it needs to be registered as a service"
+			read -r -p "Do you want to register Red5 Pro service now? [y/N] " response
+		else
+			response="Y"
+		fi
+
 
 		case $response in
 		[yY][eE][sS]|[yY]) 
@@ -1852,8 +1925,8 @@ install_rpro_zip()
 			register_rpro_service
 		
 			if [ "$rpro_service_install_success" -eq 0 ]; then
-			lecho_err "Failed to register Red5 Pro service. Something went wrong!! Try again or contact support!"
-			pause
+				lecho_err "Failed to register Red5 Pro service. Something went wrong!! Try again or contact support!"
+				pause				
 			fi
 		;;
 		*)
@@ -1863,6 +1936,13 @@ install_rpro_zip()
 	
 		# All Done
 		lecho "Red5 Pro service is now installed on your system. You can start / stop it with from the menu".
+
+		# Auto start
+		if [ "$rpro_service_install_success" -eq 1 ]; then
+			if $RED5PRO_INSTALL_AS_SERVICE; then
+				start_red5pro_service 1
+			fi
+		fi
 	else
 		
 		lecho "Red5 Pro service auto-install is disabled. You can manually register Red5 Pro as service from the menu.".
@@ -1872,9 +1952,9 @@ install_rpro_zip()
 	# Moving to home directory	
 	cd ~
 
-	if [ $# -eq 0 ]
-	  then
-	    pause
+
+	if [ $# -eq 0 ];  then
+    		pause
 	fi
 	
 }
@@ -3394,8 +3474,22 @@ read_welcome_menu_options()
 
 main()
 {
-	welcome_menu
-	read_welcome_menu_options
+	cls
+
+	if [[ $RED5PRO_INSTALL_MODE -eq 0 ]]; then
+		welcome_menu
+		read_welcome_menu_options
+	else
+		detect_system
+		lecho "Auto selecting Basic mode"
+		RPRO_MODE=0
+		
+		sleep 2
+
+		cls && auto_install_rpro_url
+	fi
+
+
 }
 
 
@@ -3417,6 +3511,11 @@ prerequisites()
 	prerequisites_unzip
 	prerequisites_wget
 	prerequisites_bc
+
+	if [[ $RED5PRO_INSTALL_FOR_AUTOSCALING -eq 1 ]]; then
+		prerequisites_ntp
+	fi
+	
 }
 
 
@@ -3489,6 +3588,20 @@ prerequisites_unzip()
 		sleep 2
 
 		install_unzip
+	fi 
+}
+
+
+prerequisites_ntp()
+{
+	check_ntp
+
+
+	if [[ $ntp_check_success -eq 0 ]]; then
+		echo "Installing ntp..."
+		sleep 2
+
+		install_ntp
 	fi 
 }
 
@@ -3696,7 +3809,87 @@ load_configuration
 
 # Start application
 write_log "====================================="
-write_log "	NEW INSTALLER SESSION	
+write_log "	NEW INSTALLER SESSION		"
 
-	"
-main
+
+# sudo ./rpro-utils.sh -m 1 -o installurl -p <myurl>
+
+if [ $# -gt 0 ];  then
+	cls
+	
+	params_length=0
+	
+	while getopts m:o:p:s: option
+	do
+	case "${option}"
+	in
+	m) opmode=${OPTARG};;
+	o) operation=${OPTARG};;
+	p) params=${OPTARG};;
+	s) autostart=${OPTARG};;
+	esac
+	done
+
+	detect_system
+
+	if [[ $opmode -eq 0 ]]; then
+		RED5PRO_INSTALL_MODE=0
+		cls && main
+	else
+
+		if [ -z ${autostart+x} ]; then
+			write_log "No autostart flag provided"
+		else
+			if [ $autostart -eq 0 ];  then
+				lecho "Start after install disabled"
+				RED5PRO_START_AFTER_INSTALL=false
+			else
+				lecho "Start after install enabled"
+				RED5PRO_START_AFTER_INSTALL=true
+			fi
+		fi
+
+		if [ -z ${params+x} ]; then
+			lecho "No params provided"
+		else
+			IFS=' '
+			read -ra PARAMS_ARR <<< "$params"
+			params_length=${#PARAMS_ARR[@]}
+		fi
+		
+
+		if [ -z ${operation+x} ]; then
+			lecho "WARNING! No 'operation' specified!!"
+		else
+
+			RED5PRO_INSTALL_MODE=1
+
+			case "$operation" in
+				installsite)
+					lecho "installsite : command is not yet supported"
+					sleep 2 && exit 1
+					#cls && auto_install_rpro
+					;;
+				 
+				installurl)
+					lecho "installurl"
+					RPRO_MODE=0
+					if [[ $params_length -gt 0 ]]; then
+						RED5PRO_DOWNLOAD_URL=${PARAMS_ARR[0]}
+						sleep 2 && cls && auto_install_rpro_url
+					else
+						lecho "'installurl' requires one parameter (url of red5 pro archive to install from)"	
+						sleep 2 && exit 1
+					fi
+					;;
+				 
+				*)
+				    lecho $"Unknown operation $operation"
+				    exit 1
+			 
+			esac
+		fi
+	fi
+else
+	cls && main
+fi
