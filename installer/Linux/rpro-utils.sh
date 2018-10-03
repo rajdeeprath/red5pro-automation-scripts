@@ -57,6 +57,7 @@ RED5PRO_SSL_DEFAULT_WSS_PORT=8083
 RED5PRO_DOWNLOAD_URL=
 RED5PRO_MEMORY_PCT=80
 
+RED5PRO_DEFAULT_MIN_MEMORY_PATTERN="-Xms2g"
 RED5PRO_DEFAULT_MEMORY_PATTERN="-Xmx2g"
 
 
@@ -1262,8 +1263,11 @@ modify_jvm_memory()
 			eval_memory_to_allocate			
 			alloc_phymem_string="-Xmx"$alloc_phymem_rounded"g"
 
-			sed -i -e "s/-Xmx2g/$alloc_phymem_string/g" $red5_sh_file # improve this
+			sed -i -e "s/-Xms2g/$alloc_phymem_string/g" $red5_sh_file # improve this
+			sleep 1
+			sed -i -e "s/-Xmx2g/$alloc_phymem_string/g" $red5_sh_file # improve this			-
 			lecho "JVM memory size is set to $alloc_phymem_rounded Gb!"
+			
 			sleep 1
 
 			if [ ! $# -eq 0 ];  then
@@ -2204,6 +2208,7 @@ register_rpro_service_v2()
 
 	# JVM memory allocation
 	eval_memory_to_allocate 1
+	JVM_MEMORY_ALLOC_MIN="-Xms"$alloc_phymem_rounded"g"
 	JVM_MEMORY_ALLOC="-Xmx"$alloc_phymem_rounded"g"
 
 
@@ -2242,7 +2247,7 @@ ExecStart=/usr/bin/jsvc -debug \
     -Djava.security.debug=failure -Djava.security.egd=file:/dev/./urandom \
     -Dcatalina.home=\${RED5_HOME} -Dcatalina.useNaming=true \
     -Dorg.terracotta.quartz.skipUpdateCheck=true \
-    -Xms256m $JVM_MEMORY_ALLOC -Xverify:none \
+    $JVM_MEMORY_ALLOC_MIN $JVM_MEMORY_ALLOC -Xverify:none \
     -XX:+TieredCompilation -XX:+UseBiasedLocking \
     -XX:MaxMetaspaceSize=128m -XX:+UseParNewGC -XX:+UseConcMarkSweepGC \
     -XX:InitialCodeCacheSize=8m -XX:ReservedCodeCacheSize=32m \
@@ -3570,7 +3575,7 @@ postrequisites()
 postrequisites_rhl()
 {
 	write_log "Installing additional dependencies for RHLE"
-	yum -y install java unzip jsvc ntp libva libvdpau
+	yum -y install ntp libva libvdpau
 }
 
 
@@ -3579,7 +3584,7 @@ postrequisites_rhl()
 postrequisites_deb()
 {
 	write_log "Installing additional dependencies for DEBIAN"
-	apt-get install -y libva1 libva-drm1 libva-x11-1 libvdpau1
+	apt-get install -y ntp libva1 libva-drm1 libva-x11-1 libvdpau1
 }
 
 
